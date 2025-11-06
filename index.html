@@ -1,0 +1,229 @@
+<!--
+Apollo STEM Academy - Single-file GitHub Pages Template
+
+Instructions:
+1. Save this file as index.html and push to a GitHub repo named <your-username>.github.io to publish on GitHub Pages.
+2. Replace the placeholder links for ENROLL_FORM_URL and VOLUNTEER_FORM_URL with your Google Form or Formspree endpoints.
+3. Replace BETA_PASS value in the SCRIPT below with your chosen private access password (client-side gating only).
+4. If you want to use an AI API later, follow the commented section and use a secure proxy (Cloudflare Worker or serverless function) to hide API keys.
+
+This template uses Tailwind CDN for styling and is intentionally self-contained for fast deployment.
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Apollo STEM Academy — Private Online School</title>
+  <meta name="description" content="Apollo STEM Academy — Private AI + Teacher-guided tutoring for grades 1–12. Limited founding free enrollment." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Cinematic touches */
+    .hero-bg { background: radial-gradient(ellipse at top left, rgba(99,102,241,0.18), transparent 20%), linear-gradient(180deg,rgba(17,24,39,0.9), rgba(0,0,0,0.6)); }
+    .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-black via-gray-900 to-gray-800 text-white antialiased">
+  <!-- NAV -->
+  <header class="max-w-6xl mx-auto p-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-yellow-400 flex items-center justify-center text-black font-bold">A</div>
+      <div>
+        <h1 class="text-xl font-semibold">Apollo STEM Academy</h1>
+        <p class="text-xs text-gray-400">Private • AI-powered • Teacher-guided</p>
+      </div>
+    </div>
+    <nav class="space-x-4">
+      <a href="#about" class="text-gray-300 hover:text-white">About</a>
+      <a href="#subjects" class="text-gray-300 hover:text-white">Subjects</a>
+      <a href="#enroll" class="text-gray-300 hover:text-white">Enroll</a>
+      <a href="#volunteer" class="text-gray-300 hover:text-white">Volunteer</a>
+      <button id="accessBtn" class="ml-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded">Student Login</button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <main class="hero-bg py-20">
+    <section class="max-w-6xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
+      <div class="flex-1">
+        <h2 class="text-5xl font-extrabold leading-tight">Private, AI-powered tutoring<br class="hidden md:inline"/>with real teacher support</h2>
+        <p class="mt-6 text-gray-300 max-w-xl">Apollo STEM Academy offers personalized lessons and practice for Grades 1–12 in Math, Science, and Language Arts. Join our founding cohort — limited free spots available.</p>
+
+        <div class="mt-8 flex gap-4">
+          <a href="#enroll" class="px-6 py-3 rounded bg-yellow-400 text-black font-semibold shadow-lg hover:scale-105 transform transition">Apply for Free (First 50)</a>
+          <a href="#subjects" class="px-6 py-3 rounded border border-gray-600 text-gray-200 hover:bg-gray-700">Explore Subjects</a>
+        </div>
+
+        <div class="mt-8 text-sm text-gray-400 grid grid-cols-3 gap-4">
+          <div>
+            <div class="font-semibold text-white">Free spots</div>
+            <div id="spots" class="text-yellow-300">50 available</div>
+          </div>
+          <div>
+            <div class="font-semibold text-white">Promo price</div>
+            <div class="text-gray-200">$15 / month</div>
+          </div>
+          <div>
+            <div class="font-semibold text-white">Registration</div>
+            <div class="text-gray-200">$25 one-time</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO VISUAL -->
+      <div class="flex-1">
+        <div class="rounded-3xl overflow-hidden glass p-6 shadow-2xl">
+          <div class="mb-4">
+            <div class="text-sm text-gray-300">Live Demo — AI Tutor</div>
+            <div class="text-xs text-gray-500">(Using a free chat embed for MVP)</div>
+          </div>
+
+          <!-- AI chat embed (HuggingChat or replace with your AI iframe) -->
+          <iframe id="aiChat" src="https://huggingface.co/chat" class="w-full h-96 rounded-lg border border-gray-700" title="AI Tutor"></iframe>
+          <div class="mt-4 text-xs text-gray-400">Tip: Ask the AI a specific question like "Explain fractions for grade 4".</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ABOUT -->
+  <section id="about" class="max-w-6xl mx-auto p-6 mt-12">
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="text-3xl font-bold">A private, guided approach</h3>
+        <p class="mt-4 text-gray-300">We combine AI for scalable, personalized instruction with volunteer teachers and mentors who review lessons, provide feedback, and ensure age-appropriate learning. The academy is private and invite-only during the founding period.</p>
+
+        <ul class="mt-6 space-y-3 text-gray-300">
+          <li>• AI-generated lessons and practice</li>
+          <li>• Asynchronous teacher review and mentoring</li>
+          <li>• Simple progress tracking using Google Sheets</li>
+        </ul>
+      </div>
+      <div>
+        <div class="rounded-lg overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=8a16d2b1c3b7f6e2fdf4a3f20f5f3e4f" alt="students" class="w-full h-64 object-cover">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUBJECTS -->
+  <section id="subjects" class="max-w-6xl mx-auto p-6 mt-12">
+    <h3 class="text-2xl font-bold">Subjects</h3>
+    <div class="mt-6 grid md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-2xl glass border border-gray-700">
+        <h4 class="text-xl font-semibold">Mathematics</h4>
+        <p class="mt-2 text-gray-300">Algebra, Geometry, Arithmetic, Precalculus. AI lessons + practice problems with step-by-step explanations.</p>
+        <a href="#" class="mt-4 inline-block text-sm text-yellow-300">Open Math Tutor →</a>
+      </div>
+      <div class="p-6 rounded-2xl glass border border-gray-700">
+        <h4 class="text-xl font-semibold">Science</h4>
+        <p class="mt-2 text-gray-300">Physical science, Biology, Earth science, and hands-on experiment ideas for home.</p>
+        <a href="#" class="mt-4 inline-block text-sm text-yellow-300">Open Science Tutor →</a>
+      </div>
+      <div class="p-6 rounded-2xl glass border border-gray-700">
+        <h4 class="text-xl font-semibold">Language Arts</h4>
+        <p class="mt-2 text-gray-300">Reading comprehension, grammar, writing prompts, and creative feedback.</p>
+        <a href="#" class="mt-4 inline-block text-sm text-yellow-300">Open English Tutor →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENROLL -->
+  <section id="enroll" class="max-w-4xl mx-auto p-6 mt-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl border border-gray-700">
+    <h3 class="text-2xl font-bold">Limited Founding Enrollment</h3>
+    <p class="mt-3 text-gray-300">We are offering free access to the first <span class="font-semibold text-yellow-300">50</span> students for a limited time. After the free period, private enrollment opens at <span class="font-semibold">$15/month</span> (promo) + <span class="font-semibold">$25</span> registration.</p>
+
+    <div class="mt-6 grid md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="text-lg font-semibold">Apply for Free</h4>
+        <p class="text-gray-400 mt-2">Apply now — we will manually approve and email private access links.</p>
+        <!-- Replace ENROLL_FORM_URL with your Google Form link -->
+        <a href="ENROLL_FORM_URL" class="mt-4 inline-block px-5 py-3 bg-yellow-400 text-black rounded font-semibold">Apply Now</a>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold">Private Access</h4>
+        <p class="text-gray-400 mt-2">Existing students can access a private dashboard. Click 'Student Login' and enter your invitation code.</p>
+        <button id="openDashboard" class="mt-4 px-5 py-3 border border-gray-600 rounded">Open Student Area</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOLUNTEER -->
+  <section id="volunteer" class="max-w-6xl mx-auto p-6 mt-12">
+    <div class="grid md:grid-cols-2 gap-6 items-center">
+      <div>
+        <h3 class="text-2xl font-bold">Volunteer with Apollo</h3>
+        <p class="mt-4 text-gray-300">We're seeking volunteers — teachers, tutors, mentors, and tech helpers. Help review AI lessons, mentor students, or contribute to curriculum design.</p>
+        <a href="VOLUNTEER_FORM_URL" class="mt-4 inline-block px-5 py-3 bg-indigo-600 rounded font-semibold">Volunteer Application</a>
+      </div>
+      <div>
+        <div class="rounded-lg overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=3f2f39f314e4b2ea7b6b2a8d1b1a9c3a" alt="volunteer" class="w-full h-56 object-cover">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="max-w-6xl mx-auto p-6 mt-12 border-t border-gray-800 text-gray-400">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>© Apollo STEM Academy — Private Beta</div>
+      <div class="text-sm">Privacy • Terms • Contact: <a href="mailto:hello@apollostem.academy" class="text-yellow-300">hello@apollostem.academy</a></div>
+    </div>
+  </footer>
+
+  <!-- SIMPLE CLIENT-SIDE PRIVATE AREA & SCRIPTS -->
+  <script>
+    // PLEASE CHANGE THIS to your private password (client-side only; not secure for high-security use)
+    const BETA_PASS = 'apollo-beta-2025';
+    const ENROLL_FORM = 'ENROLL_FORM_URL'; // replace
+    const VOLUNTEER_FORM = 'VOLUNTEER_FORM_URL'; // replace
+
+    document.querySelectorAll('a[href="ENROLL_FORM_URL"]').forEach(a => a.href = ENROLL_FORM);
+    document.querySelectorAll('a[href="VOLUNTEER_FORM_URL"]').forEach(a => a.href = VOLUNTEER_FORM);
+
+    // Simple student login
+    const accessBtn = document.getElementById('accessBtn');
+    const openDashboard = document.getElementById('openDashboard');
+
+    accessBtn.addEventListener('click', () => {
+      const code = prompt('Enter your private access code');
+      if(code === BETA_PASS) {
+        window.location.hash = '#dashboard';
+        showDashboard();
+      } else if(code) {
+        alert('Invalid code. If you believe this is an error, contact hello@apollostem.academy');
+      }
+    });
+
+    openDashboard.addEventListener('click', () => {
+      const code = prompt('Enter your private access code');
+      if(code === BETA_PASS) showDashboard();
+    });
+
+    function showDashboard(){
+      // Simple dashboard: show a modal-like area; in production, replace with Firebase auth and a real dashboard
+      const el = document.createElement('div');
+      el.innerHTML = `\n        <div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999">\n          <div style="background:#0b1220;padding:24px;border-radius:12px;max-width:900px;width:100%;">\n            <h3 style="font-size:20px;margin-bottom:8px">Student Dashboard (Private)</h3>\n            <p style="color:#9ca3af;margin-bottom:12px">Welcome to your private student area. Links below are for your learning resources.</p>\n            <ul style="color:#e5e7eb;">\n              <li>- <a href="#subjects">Open Subject Tutors</a></li>\n              <li>- Submit assignments via Google Form</li>\n              <li>- View progress (email us to enable)</li>\n            </ul>\n            <div style="margin-top:12px;text-align:right">\n              <button id="closeDash" style="padding:8px 12px;background:#111827;border-radius:8px">Close</button>\n            </div>\n          </div>\n        </div>\n      `;
+      document.body.appendChild(el);
+      document.getElementById('closeDash').addEventListener('click', () => { document.body.removeChild(el); });
+    }
+
+    // Spots counter: if you have server-side tracking, update this dynamically. For the static site, you can edit the number in the HTML.
+    // FUTURE: connect to a Google Sheet or Firebase to change spots in real-time.
+
+    // Accessibility focus handling
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape'){
+        const modal = document.querySelector('div[role="dialog"]');
+        if(modal) modal.remove();
+      }
+    });
+
+    // Note: To use an AI API (OpenAI / Gemini), create a secure proxy endpoint and call it here. Do NOT place API keys in client-side code.
+    // Example flow: client -> Cloudflare Worker -> OpenAI API. The worker keeps the key secret and returns model responses.
+  </script>
+</body>
+</html>
