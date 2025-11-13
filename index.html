@@ -1,11 +1,11 @@
 <!--
-Apollo STEM Academy - Single-file GitHub Pages Template (Live AI Tutor Integrated)
+Apollo STEM Academy - Single-file GitHub Pages Template (Live AI Tutor Integrated + Debug Logs)
 
 Instructions:
-1. Save this file as index.html and push to your GitHub repo.
-2. Replace ENROLL_FORM_URL and VOLUNTEER_FORM_URL with your actual form links.
-3. The AI Tutor now uses your secure Cloudflare Worker endpoint.
-4. Student login uses client-side password (for MVP only).
+1. Save as index.html and push to your GitHub repo.
+2. Replace ENROLL_FORM_URL and VOLUNTEER_FORM_URL with your actual Google Form links.
+3. AI Tutor connects to your Cloudflare Worker at: https://apolloacademyaiteacher.revanaglobal.workers.dev
+4. Debug logs appear in browser Console to help troubleshoot.
 -->
 
 <!doctype html>
@@ -151,7 +151,6 @@ Instructions:
       <div>
         <h4 class="text-lg font-semibold">Apply for Free</h4>
         <p class="text-gray-400 mt-2">Apply now — we will manually approve and email private access links.</p>
-        <!-- Replace ENROLL_FORM_URL with your Google Form link -->
         <a href="ENROLL_FORM_URL" class="mt-4 inline-block px-5 py-3 bg-yellow-400 text-black rounded font-semibold">Apply Now</a>
       </div>
       <div>
@@ -222,11 +221,13 @@ Instructions:
       document.getElementById('closeDash').addEventListener('click', () => { document.body.removeChild(el); });
     }
 
-    // === LIVE AI TUTOR ===
+    // === LIVE AI TUTOR (WITH DEBUG LOGS) ===
     async function sendAiMessage() {
       const input = document.getElementById('ai-user-input');
       const message = input.value.trim();
       if (!message) return;
+
+      console.log("🚀 Sending to AI:", message);
 
       const messagesEl = document.getElementById('ai-messages');
       
@@ -245,24 +246,31 @@ Instructions:
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
       try {
-        // 🔁 Connects to YOUR Cloudflare Worker
         const response = await fetch('https://apolloacademyaiteacher.revanaglobal.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message, subject: "General" })
         });
 
+        console.log("📡 Worker response:", response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("🤖 AI replied:", data);
+
         const reply = data.reply || "I'm here to help! Try rephrasing your question.";
 
-        // Show AI response
         const aiMsg = document.createElement('div');
         aiMsg.innerHTML = `<div class="text-left"><span class="inline-block bg-gray-800 text-gray-200 px-3 py-1.5 rounded-lg">${reply}</span></div>`;
         messagesEl.replaceChild(aiMsg, document.getElementById('ai-thinking'));
         messagesEl.scrollTop = messagesEl.scrollHeight;
       } catch (err) {
+        console.error("💥 Fetch failed:", err);
         const errorMsg = document.createElement('div');
-        errorMsg.innerHTML = `<div class="text-left"><span class="inline-block bg-red-900/50 text-red-200 px-3 py-1.5 rounded-lg">⚠️ Connection error. Try again.</span></div>`;
+        errorMsg.innerHTML = `<div class="text-left"><span class="inline-block bg-red-900/50 text-red-200 px-3 py-1.5 rounded-lg">⚠️ AI unreachable. Check console.</span></div>`;
         messagesEl.replaceChild(errorMsg, document.getElementById('ai-thinking'));
       }
     }
