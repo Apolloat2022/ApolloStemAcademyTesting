@@ -68,27 +68,31 @@ Instructions:
         </div>
       </div>
 
-      <!-- HERO VISUAL: ZAPIER AI TUTOR -->
-      <div class="flex-1">
-        <div class="rounded-3xl overflow-hidden glass p-6 shadow-2xl">
-          <div class="mb-4">
-            <div class="text-sm text-gray-300">Live Demo — AI Tutor</div>
-            <div class="text-xs text-gray-500">Powered by Apollo’s AI engine</div>
-          </div>
-          <div class="w-full h-96 flex items-center justify-center bg-gray-900 rounded-lg border border-gray-700">
-            <p class="text-gray-500 text-sm">Loading AI tutor...</p>
-          </div>
-          <!-- Zapier Interfaces Embed -->
-          <script async type="module" src="https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js"></script>
-          <zapier-interfaces-chatbot-embed 
-            is-popup="true" 
-            chatbot-id="cmhya2xr0000dktpydkp500q3"
-            button-label="Ask the AI Tutor"
-            button-color="#4f46e5">
-          </zapier-interfaces-chatbot-embed>
-          <div class="mt-4 text-xs text-gray-400">Tip: Ask the AI a specific question like "Explain fractions for grade 4".</div>
-        </div>
-      </div>
+     <!-- HERO VISUAL: ZAPIER AI TUTOR (Embedded In-Box) -->
+<div class="flex-1">
+  <div class="rounded-3xl overflow-hidden glass p-6 shadow-2xl">
+    <div class="mb-4">
+      <div class="text-sm text-gray-300">Live Demo — AI Tutor</div>
+      <div class="text-xs text-gray-500">Powered by Apollo’s AI engine</div>
+    </div>
+
+    <!-- AI Chat Container -->
+    <div class="w-full h-96 rounded-lg border border-gray-700 overflow-hidden bg-gray-900">
+      <script async type="module" src="https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js"></script>
+      <zapier-interfaces-chatbot-embed 
+        is-popup="true" 
+        chatbot-id="cmhya2xr0000dktpydkp500q3"
+        button-label="💬 Ask the AI Tutor"
+        button-color="#4f46e5"
+        style="width: 100%; height: 100%; display: block;">
+      </zapier-interfaces-chatbot-embed>
+    </div>
+
+    <div class="mt-4 text-xs text-gray-400">
+      Tip: Ask the AI a specific question like "Explain fractions for grade 4".
+    </div>
+  </div>
+</div>
     </section>
   </main>
 
@@ -204,3 +208,4 @@ Instructions:
   </script>
 </body>
 </html>
+
