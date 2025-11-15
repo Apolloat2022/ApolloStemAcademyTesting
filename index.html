@@ -49,6 +49,39 @@
       background-size: 2000px 100%;
       animation: shimmer 2s infinite linear;
     }
+    /* Add this to your main CSS file (usually styles.css or tailwind.css) */
+
+/* Hover animations */
+.hover-lift:hover {
+  transform: translateY(-4px);
+  transition: transform 0.2s ease-in-out;
+}
+/* Gradient text for premium tier */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Pulse animation for CTA buttons */
+@keyframes pulse-gentle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+.pulse-gentle {
+  animation: pulse-gentle 2s infinite;
+}
+    /* Optional: Apply your cinematic styles to sponsorship cards */
+.sponsor-card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.sponsor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+}
   </style>
 </head>
 <body class="bg-gradient-to-b from-black via-gray-900 to-gray-800 text-white antialiased">
@@ -244,7 +277,220 @@
     </div>
   </div>
 </section>
+<!-- Individual Sponsorship Section -->
+<section class="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Section Header -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">
+        Become an Individual Sponsor
+      </h2>
+      <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+        Join our Innovator's Circle and help power the next generation of STEM leaders. Every contribution makes a difference.
+      </p>
+    </div>
 
+    <!-- Sponsorship Tiers Grid -->
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-4 md:grid-cols-2 max-w-6xl mx-auto">
+      
+      <!-- Friend of the Academy - $50 -->
+      <div class="flex flex-col rounded-2xl bg-white shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300">
+        <div class="p-6 sm:p-8 flex-1">
+          <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-900">Friend of the Academy</h3>
+            <div class="mt-4 flex items-baseline justify-center">
+              <span class="text-3xl font-bold tracking-tight text-gray-900">$50</span>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">Perfect for supporters who want to make a difference</p>
+          </div>
+          <ul role="list" class="mt-6 space-y-3">
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Our sincere gratitude</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Personal thank-you email</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Help power a student's learning journey</span>
+            </li>
+          </ul>
+        </div>
+        <div class="p-6 pt-0">
+          <a href="#sponsor-form" class="block w-full bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-300 rounded-lg py-3 px-4 text-center text-sm font-semibold transition-colors duration-200">
+            Sponsor Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Learning Ally - $100 -->
+      <div class="flex flex-col rounded-2xl bg-white shadow-lg ring-1 ring-gray-200 hover:shadow-xl transition-all duration-300">
+        <div class="p-6 sm:p-8 flex-1">
+          <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-900">Learning Ally</h3>
+            <div class="mt-4 flex items-baseline justify-center">
+              <span class="text-3xl font-bold tracking-tight text-gray-900">$100</span>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">Support individual student learning journeys</p>
+          </div>
+          <ul role="list" class="mt-6 space-y-3">
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">All previous benefits</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Name in "Community Supporters" section</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Optional public thank-you post</span>
+            </li>
+          </ul>
+        </div>
+        <div class="p-6 pt-0">
+          <a href="#sponsor-form" class="block w-full bg-green-600 text-white hover:bg-green-700 rounded-lg py-3 px-4 text-center text-sm font-semibold transition-colors duration-200">
+            Sponsor Now
+          </a>
+        </div>
+      </div>
+
+      <!-- STEM Patron - $250 -->
+      <div class="flex flex-col rounded-2xl bg-white shadow-xl ring-2 ring-blue-500 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span class="inline-flex items-center rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-800">
+            Popular
+          </span>
+        </div>
+        <div class="p-6 sm:p-8 flex-1 pt-10">
+          <div class="text-center">
+            <h3 class="text-lg font-semibold text-gray-900">STEM Patron</h3>
+            <div class="mt-4 flex items-baseline justify-center">
+              <span class="text-3xl font-bold tracking-tight text-gray-900">$250</span>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">Make a significant impact on our programs</p>
+          </div>
+          <ul role="list" class="mt-6 space-y-3">
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">All previous benefits</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Name on main website sponsors page</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Shout-out in community newsletter</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-gray-600">Digital certificate of appreciation</span>
+            </li>
+          </ul>
+        </div>
+        <div class="p-6 pt-0">
+          <a href="#sponsor-form" class="block w-full bg-blue-600 text-white hover:bg-blue-700 rounded-lg py-3 px-4 text-center text-sm font-semibold transition-colors duration-200">
+            Sponsor Now
+          </a>
+        </div>
+      </div>
+
+      <!-- Visionary Benefactor - $500+ -->
+      <div class="flex flex-col rounded-2xl bg-gradient-to-br from-purple-900 to-indigo-800 shadow-2xl ring-1 ring-purple-600 hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="p-6 sm:p-8 flex-1">
+          <div class="text-center">
+            <h3 class="text-lg font-semibold text-white">Visionary Benefactor</h3>
+            <div class="mt-4 flex items-baseline justify-center">
+              <span class="text-3xl font-bold tracking-tight text-white">$500+</span>
+            </div>
+            <p class="mt-4 text-sm text-purple-200">Join our leadership circle of supporters</p>
+          </div>
+          <ul role="list" class="mt-6 space-y-3">
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-purple-100">All previous benefits</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-purple-100">Name on "Wall of Honor"</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-purple-100">Personalized thank-you letter</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-purple-100">Exclusive digital badge</span>
+            </li>
+            <li class="flex gap-x-3">
+              <svg class="h-6 w-5 flex-none text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-sm text-purple-100">Early access to student showcases</span>
+            </li>
+          </ul>
+        </div>
+        <div class="p-6 pt-0">
+          <a href="#sponsor-form" class="block w-full bg-yellow-400 text-gray-900 hover:bg-yellow-300 rounded-lg py-3 px-4 text-center text-sm font-semibold transition-colors duration-200">
+            Become a Visionary
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="mt-12 text-center">
+      <p class="text-sm text-gray-500 max-w-2xl mx-auto">
+        All individual sponsors are automatically enrolled in our "Innovator's Circle" and will receive updates on how their support is making a difference in students' lives.
+      </p>
+      <div class="mt-6 flex justify-center gap-4">
+        <a href="#contact" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+          Have questions?
+          <svg class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        <a href="#faq" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+          Read FAQ
+          <svg class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 <!-- FOOTER -->
 <footer class="max-w-6xl mx-auto p-4 md:p-6 mt-10 md:mt-12 border-t border-gray-800 text-gray-400">
   <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -252,7 +498,40 @@
     <div class="text-sm">Privacy • Terms • Contact: <a href="mailto:Robinpandey@apollotunes.com" class="text-yellow-300">Robinpandey@apollotunes.com</a></div>
   </div>
 </footer>
+// Sponsorship tier selection handler
+function initSponsorshipTiers() {
+  const sponsorButtons = document.querySelectorAll('a[href="#sponsor-form"]');
+  
+  sponsorButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Get the tier name and amount
+      const card = this.closest('[class*="rounded-2xl"]');
+      const tierName = card.querySelector('h3').textContent;
+      const tierAmount = card.querySelector('span.text-3xl').textContent;
+      
+      // Scroll to form and pre-fill data
+      const form = document.getElementById('sponsor-form');
+      if (form) {
+        form.scrollIntoView({ behavior: 'smooth' });
+        
+        // Pre-fill form fields (you'll need to add these IDs to your form)
+        const tierInput = document.getElementById('sponsor-tier');
+        const amountInput = document.getElementById('sponsor-amount');
+        
+        if (tierInput) tierInput.value = tierName;
+        if (amountInput) amountInput.value = tierAmount.replace('$', '').replace('+', '');
+      } else {
+        // If no form exists, redirect to contact page or show message
+        window.location.href = '/contact?tier=' + encodeURIComponent(tierName);
+      }
+    });
+  });
+}
 
+// Initialize when document is loaded
+document.addEventListener('DOMContentLoaded', initSponsorshipTiers);
 <!-- MOBILE MENU SCRIPT -->
 <script>
   // Mobile menu toggle
@@ -297,3 +576,4 @@
 </script>
 </body>
 </html>
+
