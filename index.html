@@ -5,9 +5,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>Apollo STEM Academy — Private Online School</title>
+  
+  <!-- CONTENT SECURITY POLICY - FIXES BLOCKED REQUESTS TO CLOUDFLARE WORKER -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="connect-src 'self' https://apollostemacademy.revanaglobal.workers.dev https://api.groq.com https:;
+                 script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net 'unsafe-inline';
+                 style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+                 font-src 'self' https://cdnjs.cloudflare.com;
+                 img-src 'self' data: https:;">
+  
   <meta name="description" content="Apollo STEM Academy — Private AI + Teacher-guided tutoring for grades 1–12. Limited founding free enrollment." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* ---
     /* --- ENHANCED CINEMATIC ANIMATIONS --- */
     @keyframes fadeIn { 
       from { opacity: 0; transform: translateY(30px); } 
@@ -298,11 +308,11 @@
       </div>
     </div>
     
-    <!-- AI Tutor Demo -->
+    <!-- AI Math Tutor Demo -->
     <div class="flex-1 w-full max-w-2xl fade-in-delay">
       <div class="rounded-3xl overflow-hidden glass p-6 shadow-2xl">
         <div class="mb-4">
-          <div class="text-lg font-semibold text-gray-200">Live Demo — AI Math Tutor</div>
+          <div class="text-lg font-semibold text-gray-200">Live Demo — AI Tutor</div>
           <div class="text-sm text-gray-500">Powered by Apollo's AI engine</div>
         </div>
         <div class="w-full h-80 md:h-96 rounded-xl border-2 border-gray-700 overflow-hidden bg-gray-900 shimmer">
@@ -652,8 +662,7 @@
   }
 
   // ===== AI TOOLS FUNCTIONS =====
-const WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
-// Replace with your actual new worker URL
+  const CLOUDFLARE_WORKER_URL = "https://apollostemacademy.revanaglobal.workers.dev";
 
   // Math Problem Solver
   async function solveMath() {
@@ -810,9 +819,4 @@ const WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
   }
 </script>
 </body>
-
 </html>
-
-
-
-
