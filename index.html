@@ -786,33 +786,34 @@ async function generateStudyGuide() {
   }
 
   // Generic AI Call Function
-  async function callRealAI(prompt) {
-    try {
-      const response = await fetch(CLOUDFLARE_WORKER_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt: prompt })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        return data.answer;
-      } else {
-        throw new Error(data.error || 'Unknown error from worker');
-      }
-      
-    } catch (error) {
-      console.error('Error calling AI worker:', error);
-      return `🚨 AI Service Temporarily Unavailable\n\nError: ${error.message}\n\nPlease try again in a few moments.`;
+async function callRealAI(prompt) {
+  try {
+    const response = await fetch(CLOUDFLARE_WORKER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ prompt: prompt })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
     }
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      return data.answer;
+    } else {
+      throw new Error(data.error || 'Unknown error from worker');
+    }
+    
+  } catch (error) {
+    console.error('Error calling AI worker:', error);
+    return `🚨 AI Service Temporarily Unavailable\n\nError: ${error.message}\n\nPlease try again in a few moments.`;
   }
+}
+    
 </script>
 </body>
 </html>
