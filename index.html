@@ -1,263 +1,818 @@
+<!-- Apollo STEM Academy - Complete with All Features -->
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>Apollo STEM Academy — Private Online School</title>
-  <meta name="description" content="Apollo STEM Academy — Private AI + Teacher-guided tutoring for grades 1–12. Limited founding free enrollment."/>
+  
+  <!-- CONTENT SECURITY POLICY - FIXES BLOCKED REQUESTS TO CLOUDFLARE WORKER -->
+<meta http-equiv="Content-Security-Policy" 
+      content="connect-src 'self' https://apollostemacademy.revanaglobal.workers.dev https://api.groq.com https:;
+               script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://interfaces.zapier.com 'unsafe-inline';
+               style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+               font-src 'self' https://cdnjs.cloudflare.com;
+               img-src 'self' data: https:;">
+  
+  <meta name="description" content="Apollo STEM Academy — Private AI + Teacher-guided tutoring for grades 1–12. Limited founding free enrollment." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulseGlow{0%,100%{box-shadow:0 0 12px #facc15,0 0 20px #facc15}50%{box-shadow:0 0 20px #fde047,0 0 32px #fde047}}
-    @keyframes starfield{0%{background-position:0 0}100%{background-position:-10000px 5000px}}
-    .fade-in{animation:fadeIn 1s ease-out forwards}
-    .fade-in-delay{animation:fadeIn 1.4s ease-out forwards;opacity:0}
-    .hero-bg{background:radial-gradient(ellipse at top left,rgba(99,102,241,.18),transparent 20%),linear-gradient(180deg,rgba(17,24,39,.9),rgba(0,0,0,.6));position:relative;overflow:hidden}
-    .hero-bg::after{content:"";position:absolute;inset:0;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle fill="rgba(255,255,255,.04)" cx="10" cy="10" r="1"/><circle fill="rgba(255,255,255,.04)" cx="30" cy="70" r="1.2"/><circle fill="rgba(255,255,255,.04)" cx="80" cy="40" r="1"/></svg>');animation:starfield 180s linear infinite;pointer-events:none;z-index:0}
-    .glass{background:rgba(255,255,255,.04);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:transform .3s ease,box-shadow .3s ease}
-    .glass:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.25)}
-    .btn-glow{animation:pulseGlow 3s infinite ease-in-out}
+    /* ---
+    /* --- ENHANCED CINEMATIC ANIMATIONS --- */
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(30px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+    @keyframes pulseGlow { 
+      0%, 100% { box-shadow: 0 0 20px #facc15, 0 0 40px #facc15; } 
+      50% { box-shadow: 0 0 30px #fde047, 0 0 60px #fde047; } 
+    }
+    @keyframes starfield { 
+      0% { background-position: 0 0; } 
+      100% { background-position: -10000px 5000px; } 
+    }
+    @keyframes shimmer { 
+      0% { background-position: -1000px 0; } 
+      100% { background-position: 1000px 0; } 
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .fade-in { animation: fadeIn 1s ease-out forwards; }
+    .fade-in-delay { animation: fadeIn 1.4s ease-out forwards; opacity: 0; }
+    .float { animation: float 6s ease-in-out infinite; }
+    
+    .hero-bg {
+      background: linear-gradient(-45deg, #0f172a, #1e1b4b, #0f172a, #1e1b4b);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle fill="rgba(255,255,255,0.06)" cx="20" cy="20" r="1"/><circle fill="rgba(255,255,255,0.06)" cx="50" cy="80" r="1.5"/><circle fill="rgba(255,255,255,0.06)" cx="80" cy="40" r="1"/><circle fill="rgba(255,255,255,0.06)" cx="10" cy="50" r="0.8"/><circle fill="rgba(255,255,255,0.06)" cx="90" cy="90" r="1.2"/></svg>');
+      animation: starfield 120s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .glass {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .glass:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .btn-glow {
+      animation: pulseGlow 3s infinite ease-in-out;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-glow:hover {
+      animation: none;
+      transform: scale(1.05);
+    }
+    
+    .shimmer {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+      background-size: 2000px 100%;
+      animation: shimmer 3s infinite linear;
+    }
+    
+    .tool-card {
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    }
+    
+    .tool-card:hover {
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      box-shadow: 0 10px 40px rgba(99, 102, 241, 0.2);
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+    }
+
+        /* === MOBILE ENHANCEMENTS === */
+    @media (max-width: 768px) {
+        /* Better touch targets for mobile */
+        .mobile-touch {
+            min-height: 44px;
+            padding: 12px 16px;
+        }
+        
+        /* Improved mobile text readability */
+        .mobile-text {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        /* Better mobile spacing */
+        .mobile-spacing {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Optimize AI tool cards for mobile */
+        .tool-card {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+        }
+        
+        /* Improve mobile button sizes */
+        button, .btn-glow {
+            min-height: 44px;
+            font-size: 16px;
+        }
+        
+        /* Better textarea handling */
+        textarea {
+            font-size: 16px;
+            min-height: 120px;
+        }
+        
+        /* Optimize hero section for mobile */
+        .hero-bg {
+            padding: 3rem 1rem;
+        }
+        
+        /* Improve mobile navigation */
+        #mobileNav {
+            padding: 1rem;
+        }
+        
+        #mobileNav a {
+            padding: 12px 16px;
+            font-size: 18px;
+        }
+
+        /* Mobile specific text sizes */
+        .mobile-hero-text {
+            font-size: 2.5rem;
+        }
+        
+        .mobile-section-text {
+            font-size: 2rem;
+        }
+
+        /* === MOBILE-ONLY HERO TEXT FIX === */
+        /* Fix hero heading for mobile */
+        .mobile-hero-text {
+            font-size: 2.1rem !important;
+            line-height: 1.1 !important;
+        }
+        
+        /* Fix hero paragraph for mobile */
+        .hero-bg .text-xl {
+            font-size: 1rem !important;
+            line-height: 1.4 !important;
+        }
+    }
+
+    /* Extra small mobile devices */
+    @media (max-width: 480px) {
+        .hero-bg {
+            padding: 2rem 1rem;
+        }
+        
+        .tool-card {
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        
+        /* === EXTRA SMALL MOBILE HERO FIX === */
+        .mobile-hero-text {
+            font-size: 1.8rem !important;
+            line-height: 1.1 !important;
+        }
+        
+        .hero-bg .text-xl {
+            font-size: 0.95rem !important;
+        }
+    }
+
+    /* Very small phones */
+    @media (max-width: 380px) {
+        .mobile-hero-text {
+            font-size: 1.6rem !important;
+        }
+        
+        .hero-bg .text-xl {
+            font-size: 0.9rem !important;
+        }
+    }
   </style>
 </head>
-<body class="bg-gradient-to-b from-black via-gray-900 to-gray-800 text-white antialiased">
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white antialiased">
 
 <!-- NAV -->
-<header class="max-w-6xl mx-auto p-4 md:p-6 fade-in">
+<header class="max-w-7xl mx-auto p-4 md:p-6 fade-in">
   <div class="flex items-center justify-between">
+    <!-- Logo + Title -->
     <div class="flex items-center gap-3 md:gap-4">
-      <img src="logo.png" alt="Apollo STEM Academy" class="w-16 h-16 md:w-24 md:h-24 rounded-full object-contain">
+      <img src="logo.png" alt="Apollo STEM Academy" class="w-16 h-16 md:w-20 md:h-20 rounded-full object-contain float">
       <div>
-        <h1 class="text-lg md:text-xl font-semibold">Apollo STEM Academy</h1>
+        <h1 class="text-xl md:text-2xl font-bold gradient-text">Apollo STEM Academy</h1>
         <p class="text-xs text-gray-400 hidden md:block">Private • AI-powered • Teacher-guided</p>
       </div>
     </div>
-    <nav class="hidden md:flex items-center space-x-4">
-      <a href="#about" class="text-gray-300 hover:text-white">About</a>
-      <a href="#subjects" class="text-gray-300 hover:text-white">Subjects</a>
-      <a href="#enroll" class="text-gray-300 hover:text-white">Enroll</a>
-      <a href="#volunteer" class="text-gray-300 hover:text-white">Volunteer</a>
-      <a href="#sponsors" class="text-gray-300 hover:text-white">Sponsors</a>
-      <button id="accessBtn" class="ml-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded whitespace-nowrap">Student Login</button>
+    
+    <!-- Desktop Nav -->
+    <nav class="hidden md:flex items-center space-x-6">
+      <a href="#about" class="text-gray-300 hover:text-white transition-colors duration-300">About</a>
+      <a href="#tools" class="text-gray-300 hover:text-white transition-colors duration-300">AI Tools</a>
+      <a href="#enroll" class="text-gray-300 hover:text-white transition-colors duration-300">Enroll</a>
+      <a href="#volunteer" class="text-gray-300 hover:text-white transition-colors duration-300">Volunteer</a>
+      <a href="#sponsors" class="text-gray-300 hover:text-white transition-colors duration-300">Sponsors</a>
+      <button id="accessBtn" class="ml-4 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all duration-300 hover:scale-105 mobile-touch">
+        Student Login
+      </button>
     </nav>
-    <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none">
-      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuButton" class="md:hidden text-white focus:outline-none mobile-touch">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
     </button>
   </div>
-  <nav id="mobileNav" class="hidden mt-4 pb-4 md:hidden flex flex-col space-y-3">
-    <a href="#about" class="text-gray-300 hover:text-white">About</a>
-    <a href="#subjects" class="text-gray-300 hover:text-white">Subjects</a>
-    <a href="#enroll" class="text-gray-300 hover:text-white">Enroll</a>
-    <a href="#volunteer" class="text-gray-300 hover:text-white">Volunteer</a>
-    <a href="#sponsors" class="text-gray-300 hover:text-white">Sponsors</a>
-    <button id="mobileAccessBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded w-fit">Student Login</button>
+  
+  <!-- Mobile Nav -->
+  <nav id="mobileNav" class="hidden mt-4 pb-4 md:hidden flex flex-col space-y-4 mobile-spacing">
+    <a href="#about" class="text-gray-300 hover:text-white py-2 mobile-text">About</a>
+    <a href="#tools" class="text-gray-300 hover:text-white py-2 mobile-text">AI Tools</a>
+    <a href="#enroll" class="text-gray-300 hover:text-white py-2 mobile-text">Enroll</a>
+    <a href="#volunteer" class="text-gray-300 hover:text-white py-2 mobile-text">Volunteer</a>
+    <a href="#sponsors" class="text-gray-300 hover:text-white py-2 mobile-text">Sponsors</a>
+    <button id="mobileAccessBtn" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-lg w-fit mobile-touch">Student Login</button>
   </nav>
 </header>
 
 <!-- HERO -->
-<main class="hero-bg py-16 md:py-20">
-  <section class="max-w-6xl mx-auto px-4 md:px-6 flex flex-col lg:flex-row items-center gap-8 md:gap-12 relative z-10">
+<main class="hero-bg py-20 md:py-28 relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-0"></div>
+  <section class="max-w-7xl mx-auto px-4 md:px-6 flex flex-col lg:flex-row items-center gap-10 md:gap-16 relative z-10">
     <div class="flex-1 text-center lg:text-left fade-in">
-      <h2 class="text-4xl md:text-5xl font-extrabold leading-tight">Private, AI-powered tutoring<br>with real teacher support</h2>
-      <p class="mt-4 md:mt-6 text-gray-300 max-w-xl mx-auto lg:mx-0">Apollo STEM Academy offers personalized lessons and practice for Grades 1–12 in Math, Science, and Language Arts. Join our founding cohort — limited free spots available.</p>
-      <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-        <a href="#enroll" class="px-5 py-2.5 md:px-6 md:py-3 rounded bg-yellow-400 text-black font-semibold shadow-lg hover:scale-105 transition btn-glow">Apply for Free (First 50)</a>
-        <a href="#subjects" class="px-5 py-2.5 md:px-6 md:py-3 rounded border border-gray-600 text-gray-200 hover:bg-gray-700">Explore Subjects</a>
+      <h2 class="text-5xl md:text-6xl font-extrabold leading-tight mobile-hero-text">
+        Private, AI-powered tutoring<br>
+        <span class="gradient-text">with real teacher support</span>
+      </h2>
+      <p class="mt-6 md:mt-8 text-xl text-gray-300 max-w-2xl mx-auto lg:mx-0 mobile-text">
+        Apollo STEM Academy offers personalized AI lessons and practice for Grades 1–12. 
+        Join our founding cohort — limited free spots available.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+        <a href="#enroll" class="px-8 py-4 rounded-xl bg-yellow-400 text-black font-bold text-lg shadow-2xl hover:scale-105 transition-transform duration-300 btn-glow mobile-touch">
+          Apply for Free (First 50)
+        </a>
+        <a href="#tools" class="px-8 py-4 rounded-xl border-2 border-gray-600 text-gray-200 hover:bg-gray-800 hover:border-gray-500 transition-all duration-300 mobile-touch">
+          Explore AI Tools
+        </a>
       </div>
-      <div class="mt-6 text-sm text-gray-400 grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0">
-        <div><div class="font-semibold text-white">Free spots</div><div id="spots" class="text-yellow-300">50 available</div></div>
-        <div><div class="font-semibold text-white">Promo price</div><div class="text-gray-200">$15 / month</div></div>
-        <div><div class="font-semibold text-white">Registration</div><div class="text-gray-200">$25 one-time</div></div>
+      <div class="mt-8 grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-yellow-300">50</div>
+          <div class="text-gray-400 text-sm">Free Spots Left</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xl font-bold text-white">$15<span class="text-gray-400 text-sm">/month</span></div>
+          <div class="text-gray-400 text-sm">After Free</div>
+        </div>
+        <div class="text-center">
+          <div class="text-xl font-bold text-white">$25</div>
+          <div class="text-gray-400 text-sm">One-time Fee</div>
+        </div>
       </div>
     </div>
-
-    <!-- AI MATH TUTOR  (Zapier) -->
+    
+    <!-- AI Math Tutor Demo -->
     <div class="flex-1 w-full max-w-2xl fade-in-delay">
-      <div class="rounded-3xl overflow-hidden glass p-5 md:p-6 shadow-2xl">
+      <div class="rounded-3xl overflow-hidden glass p-6 shadow-2xl">
         <div class="mb-4">
-          <div class="text-sm text-gray-300">Live Demo — AI Math Tutor</div>
-          <div class="text-xs text-gray-500">Powered by Apollo's AI engine (Zapier)</div>
+          <div class="text-lg font-semibold text-gray-200">Live Demo — AI Tutor</div>
+          <div class="text-sm text-gray-500">Powered by Apollo's AI engine</div>
         </div>
-        <div class="w-full h-80 md:h-96 rounded-lg border border-gray-700 overflow-hidden bg-gray-900 shimmer">
+        <div class="w-full h-80 md:h-96 rounded-xl border-2 border-gray-700 overflow-hidden bg-gray-900 shimmer">
           <script async type="module" src="https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js"></script>
-          <zapier-interfaces-chatbot-embed
-            is-popup="true"
-            chatbot-id="cmhya2xr0000dktpydkp500q3"
-            button-label="💬 Ask the AI Tutor"
-            button-color="#4f46e5"
-            style="width:100%;height:100%;display:block;">
-          </zapier-interfaces-chatbot-embed>
+          <zapier-interfaces-chatbot-embed is-popup="true" chatbot-id="cmhya2xr0000dktpydkp500q3" button-label="💬 Ask the AI Tutor" button-color="#4f46e5" style="width: 100%; height: 100%; display: block;"></zapier-interfaces-chatbot-embed>
         </div>
-        <div class="mt-3 text-xs text-gray-400">Tip: Ask the AI a specific question like “Explain fractions for grade 4”.</div>
+        <div class="mt-4 text-sm text-gray-400">Try: "Explain photosynthesis for grade 5" or "Help with algebra homework"</div>
       </div>
     </div>
   </section>
 </main>
 
-<!-- CLOUDFLARE AI TOOLS  (below Hero) -->
-<section class="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-12 fade-in">
-  <h3 class="text-2xl font-bold text-center mb-6">More AI Tools</h3>
-  <div class="grid md:grid-cols-2 gap-6 md:gap-8">
-    <!-- Math Solver -->
-    <div class="glass rounded-2xl border border-gray-700 p-5 md:p-6">
-      <h4 class="text-lg md:text-xl font-semibold mb-3">Step-by-Step Math Solver</h4>
-      <input id="mathProblem" type="text" placeholder="e.g. 2x + 5 = 15" class="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-300">
-      <button onclick="solveMath()" class="w-full mt-3 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition">Solve</button>
-      <div id="mathSolution" class="hidden mt-4 p-4 rounded bg-gray-900 border border-gray-700 text-sm whitespace-pre-wrap"></div>
+<!-- AI TOOLS SECTION -->
+<section id="tools" class="max-w-7xl mx-auto p-4 md:p-6 mt-16 md:mt-20 fade-in">
+  <div class="text-center mb-12">
+    <h3 class="text-4xl md:text-5xl font-bold mb-4 mobile-section-text">AI-Powered Learning Tools</h3>
+    <p class="text-xl text-gray-300 max-w-3xl mx-auto mobile-text">
+      Instant AI helpers for students - no login required. Get step-by-step solutions and personalized learning support.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+    
+    <!-- Math Problem Solver -->
+    <div class="p-8 rounded-3xl tool-card glass mobile-spacing">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+          <span class="text-2xl">🧮</span>
+        </div>
+        <h4 class="text-2xl font-bold text-green-400">Math Problem Solver</h4>
+      </div>
+      <p class="text-gray-300 mb-6 mobile-text">Get step-by-step solutions to any math problem with detailed explanations.</p>
+      <textarea 
+        id="mathProblem" 
+        placeholder="Enter any math problem...&#10;Example: Solve 2x + 5 = 15&#10;Example: Find derivative of x² + 3x&#10;Example: Calculate area of a circle with radius 5" 
+        class="w-full h-32 p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-4 focus:border-green-400 transition-colors mobile-text"
+      ></textarea>
+      <button 
+        onclick="solveMath()" 
+        class="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 mobile-touch"
+      >
+        Get Step-by-Step Solution
+      </button>
+      <div id="mathSolution" class="mt-4 p-4 bg-gray-800/50 rounded-xl hidden"></div>
     </div>
 
     <!-- Worksheet Generator -->
-    <div class="glass rounded-2xl border border-gray-700 p-5 md:p-6">
-      <h4 class="text-lg md:text-xl font-semibold mb-3">Worksheet Generator</h4>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <input id="worksheetTopic" type="text" placeholder="Topic (e.g. fractions)" class="px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-300">
-        <select id="worksheetGrade" class="px-3 py-2 rounded bg-gray-800 border border-gray-700">
-          <option>Kindergarten</option>
-          <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
-          <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
-          <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
-          <option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
-        </select>
+    <div class="p-8 rounded-3xl tool-card glass mobile-spacing">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+          <span class="text-2xl">📝</span>
+        </div>
+        <h4 class="text-2xl font-bold text-blue-400">Worksheet Generator</h4>
       </div>
-      <button onclick="generateWorksheet()" class="w-full mt-3 px-4 py-2 bg-indigo-600 text-white rounded font-semibold hover:scale-105 transition">Create Worksheet</button>
-      <div id="worksheetOutput" class="hidden mt-4 p-4 rounded bg-gray-900 border border-gray-700 text-sm whitespace-pre-wrap"></div>
+      <p class="text-gray-300 mb-6 mobile-text">Create custom practice worksheets for any topic and grade level.</p>
+      <input 
+        type="text" 
+        id="worksheetTopic" 
+        placeholder="Topic (e.g., Fractions, Algebra, Geometry)" 
+        class="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-3 focus:border-blue-400 transition-colors mobile-text"
+      >
+      <select id="worksheetGrade" class="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-4 focus:border-blue-400 transition-colors mobile-text">
+        <option>Grade 1</option>
+        <option>Grade 2</option>
+        <option>Grade 3</option>
+        <option>Grade 4</option>
+        <option>Grade 5</option>
+        <option>Grade 6</option>
+        <option>Grade 7</option>
+        <option>Grade 8</option>
+        <option>Grade 9</option>
+        <option>Grade 10</option>
+        <option>Grade 11</option>
+        <option>Grade 12</option>
+      </select>
+      <button 
+        onclick="generateWorksheet()" 
+        class="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 mobile-touch"
+      >
+        Generate Practice Worksheet
+      </button>
+      <div id="worksheetOutput" class="mt-4 p-4 bg-gray-800/50 rounded-xl hidden"></div>
+    </div>
+  </div>
+
+  <!-- NEW AI FEATURES -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Science Lab Assistant -->
+    <div class="p-8 rounded-3xl tool-card glass mobile-spacing">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+          <span class="text-2xl">🔬</span>
+        </div>
+        <h4 class="text-2xl font-bold text-purple-400">Science Lab Assistant</h4>
+      </div>
+      <p class="text-gray-300 mb-6 mobile-text">Get detailed explanations of science experiments and concepts with step-by-step guides.</p>
+      <textarea 
+        id="scienceExperiment" 
+        placeholder="Describe an experiment or ask about a science concept...&#10;Examples:&#10;- Photosynthesis process&#10;- Chemical reactions&#10;- Newton's laws of motion&#10;- How batteries work" 
+        class="w-full h-32 p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-4 focus:border-purple-400 transition-colors mobile-text"
+      ></textarea>
+      <button 
+        onclick="explainScience()" 
+        class="w-full px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 mobile-touch"
+      >
+        Explain Science Concept
+      </button>
+      <div id="scienceOutput" class="mt-4 p-4 bg-gray-800/50 rounded-xl hidden"></div>
+    </div>
+
+    <!-- Study Guide Generator -->
+    <div class="p-8 rounded-3xl tool-card glass mobile-spacing">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+          <span class="text-2xl">📚</span>
+        </div>
+        <h4 class="text-2xl font-bold text-amber-400">Study Guide Generator</h4>
+      </div>
+      <p class="text-gray-300 mb-6 mobile-text">Create comprehensive study guides for any topic with key concepts and practice questions.</p>
+      <input 
+        type="text" 
+        id="studyTopic" 
+        placeholder="Topic (e.g., World War II, Algebra, Cell Biology)" 
+        class="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-3 focus:border-amber-400 transition-colors mobile-text"
+      >
+      <select id="studyLevel" class="w-full p-4 bg-gray-800/50 border border-gray-600 rounded-xl text-white mb-4 focus:border-amber-400 transition-colors mobile-text">
+        <option>Elementary School</option>
+        <option>Middle School</option>
+        <option>High School</option>
+        <option>College</option>
+      </select>
+      <button 
+        onclick="generateStudyGuide()" 
+        class="w-full px-6 py-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 mobile-touch"
+      >
+        Generate Study Guide
+      </button>
+      <div id="studyOutput" class="mt-4 p-4 bg-gray-800/50 rounded-xl hidden"></div>
     </div>
   </div>
 </section>
 
-<!-- ABOUT -->
-<section id="about" class="max-w-6xl mx-auto p-4 md:p-6 mt-10 md:mt-12 fade-in">
-  <div class="grid md:grid-cols-2 gap-6 md:gap-8 items-center">
+<!-- ABOUT SECTION -->
+<section id="about" class="max-w-7xl mx-auto p-4 md:p-6 mt-16 md:mt-20 fade-in">
+  <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
     <div>
-      <h3 class="text-2xl md:text-3xl font-bold">A private, guided approach</h3>
-      <p class="mt-3 md:mt-4 text-gray-300">We combine AI for scalable, personalized instruction with volunteer teachers and mentors who review lessons, provide feedback, and ensure age-appropriate learning. The academy is private and invite-only during the founding period.</p>
-      <ul class="mt-4 md:mt-6 space-y-2 md:space-y-3 text-gray-300"><li>• AI-generated lessons and practice</li><li>• Asynchronous teacher review and mentoring</li><li>• Simple progress tracking using Google Sheets</li></ul>
+      <h3 class="text-3xl md:text-4xl font-bold mb-6 mobile-section-text">A private, guided approach</h3>
+      <p class="text-lg text-gray-300 mb-6 mobile-text">We combine AI for scalable, personalized instruction with volunteer teachers and mentors who review lessons, provide feedback, and ensure age-appropriate learning.</p>
+      <ul class="space-y-4 text-gray-300">
+        <li class="flex items-center gap-3 mobile-text">
+          <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+          AI-generated lessons and practice
+        </li>
+        <li class="flex items-center gap-3 mobile-text">
+          <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+          Asynchronous teacher review and mentoring
+        </li>
+        <li class="flex items-center gap-3 mobile-text">
+          <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+          Simple progress tracking using Google Sheets
+        </li>
+      </ul>
     </div>
-    <div class="rounded-lg overflow-hidden"><img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1600&auto=format&fit=crop" alt="students" class="w-full h-56 md:h-64 object-cover"></div>
+    <div class="rounded-2xl overflow-hidden glass">
+      <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=8a16d2b1c3b7f6e2fdf4a3f20f5f3e4f" alt="students" class="w-full h-64 md:h-80 object-cover">
+    </div>
   </div>
 </section>
 
-<!-- SUBJECTS -->
-<section id="subjects" class="max-w-6xl mx-auto p-4 md:p-6 mt-10 md:mt-12 fade-in">
-  <h3 class="text-xl md:text-2xl font-bold text-center">Subjects</h3>
-  <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-    <div class="p-5 md:p-6 rounded-2xl glass border border-gray-700"><h4 class="text-lg md:text-xl font-semibold">Mathematics</h4><p class="mt-2 text-gray-300 text-sm md:text-base">Algebra, Geometry, Arithmetic, Precalculus. AI lessons + practice problems with step-by-step explanations.</p></div>
-    <div class="p-5 md:p-6 rounded-2xl glass border border-gray-700"><h4 class="text-lg md:text-xl font-semibold">Science</h4><p class="mt-2 text-gray-300 text-sm md:text-base">Physical science, Biology, Earth science, and hands-on experiment ideas for home.</p></div>
-    <div class="p-5 md:p-6 rounded-2xl glass border border-gray-700"><h4 class="text-lg md:text-xl font-semibold">Language Arts</h4><p class="mt-2 text-gray-300 text-sm md:text-base">Reading comprehension, grammar, writing prompts, and creative feedback.</p></div>
-  </div>
-</section>
-
-<!-- ENROLL -->
-<section id="enroll" class="max-w-4xl mx-auto p-4 md:p-6 mt-10 md:mt-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl border border-gray-700 fade-in">
-  <h3 class="text-xl md:text-2xl font-bold text-center">Limited Founding Enrollment</h3>
-  <p class="mt-3 text-gray-300 text-center">We are offering free access to the first <span class="font-semibold text-yellow-300">50</span> students for a limited time. After the free period, private enrollment opens at <span class="font-semibold">$15/month</span> (promo) + <span class="font-semibold">$25</span> registration.</p>
+<!-- ENROLL SECTION -->
+<section id="enroll" class="max-w-4xl mx-auto p-4 md:p-6 mt-16 md:mt-20 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl border border-gray-700 fade-in mobile-spacing">
+  <h3 class="text-xl md:text-2xl font-bold text-center mobile-section-text">Limited Founding Enrollment</h3>
+  <p class="mt-3 text-gray-300 text-center mobile-text">We are offering free access to the first <span class="font-semibold text-yellow-300">50</span> students for a limited time. After the free period, private enrollment opens at <span class="font-semibold">$15/month</span> (promo) + <span class="font-semibold">$25</span> registration.</p>
   <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="text-center md:text-left"><h4 class="text-lg font-semibold">Apply for Free</h4><p class="text-gray-400 mt-2">Apply now — we will manually approve and email private access links.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSchUXzauH_d0SQaKhAhS7To2Op07CUkGcsLrxaNqpXLzvx2jQ/viewform" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block px-5 py-3 bg-yellow-400 text-black rounded font-semibold">Apply Now</a></div>
-    <div class="text-center md:text-left"><h4 class="text-lg font-semibold">Private Access</h4><p class="text-gray-400 mt-2">Existing students can access a private dashboard. Click 'Student Login' and enter your invitation code.</p><button id="openDashboard" class="mt-4 px-5 py-3 border border-gray-600 rounded">Open Student Area</button></div>
+    <div class="text-center md:text-left">
+      <h4 class="text-lg font-semibold">Apply for Free</h4>
+      <p class="text-gray-400 mt-2 mobile-text">Apply now — we will manually approve and email private access links.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSchUXzauH_d0SQaKhAhS7To2Op07CUkGcsLrxaNqpXLzvx2jQ/viewform" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block px-5 py-3 bg-yellow-400 text-black rounded font-semibold mobile-touch">Apply Now</a>
+    </div>
+    <div class="text-center md:text-left">
+      <h4 class="text-lg font-semibold">Private Access</h4>
+      <p class="text-gray-400 mt-2 mobile-text">Existing students can access a private dashboard. Click 'Student Login' and enter your invitation code.</p>
+      <button id="openDashboard" class="mt-4 px-5 py-3 border border-gray-600 rounded mobile-touch">Open Student Area</button>
+    </div>
   </div>
 </section>
 
-<!-- VOLUNTEER -->
-<section id="volunteer" class="max-w-6xl mx-auto p-4 md:p-6 mt-10 md:mt-12 fade-in">
+<!-- VOLUNTEER SECTION -->
+<section id="volunteer" class="max-w-6xl mx-auto p-4 md:p-6 mt-16 md:mt-20 fade-in">
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-    <div class="text-center md:text-left"><h3 class="text-xl md:text-2xl font-bold">Volunteer with Apollo</h3><p class="mt-4 text-gray-300">We're seeking volunteers — teachers, tutors, mentors, and tech helpers. Help review AI lessons, mentor students, or contribute to curriculum design.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSeXDLtEx-oIcMUORk8vyQkQD-sKMwpfR5a5YPEFKMahhAT8nQ/viewform" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block px-5 py-3 bg-indigo-600 text-white rounded font-semibold">Volunteer Application</a></div>
-    <div class="rounded-lg overflow-hidden"><img src="https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=1600&auto=format&fit=crop" alt="volunteer" class="w-full h-56 md:h-56 object-cover rounded-lg"></div>
+    <div class="text-center md:text-left">
+      <h3 class="text-xl md:text-2xl font-bold mobile-section-text">Volunteer with Apollo</h3>
+      <p class="mt-4 text-gray-300 mobile-text">We're seeking volunteers — teachers, tutors, mentors, and tech helpers. Help review AI lessons, mentor students, or contribute to curriculum design.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeXDLtEx-oIcMUORk8vyQkQD-sKMwpfR5a5YPEFKMahhAT8nQ/viewform" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block px-5 py-3 bg-indigo-600 text-white rounded font-semibold mobile-touch">Volunteer Application</a>
+    </div>
+    <div>
+      <div class="rounded-lg overflow-hidden glass">
+        <img src="https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=3f2f39f314e4b2ea7b6b2a8d1b1a9c3a" alt="volunteer" class="w-full h-56 md:h-56 object-cover rounded-lg">
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- SPONSORS -->
-<section id="sponsors" class="max-w-5xl mx-auto p-4 md:p-6 mt-10 md:mt-12 fade-in">
-  <h3 class="text-2xl md:text-3xl font-bold text-center">Become a Corporate Sponsor</h3>
-  <p class="mt-3 text-gray-300 text-center max-w-2xl mx-auto">Support Apollo STEM Academy and help us provide free, high-quality education to students worldwide. Choose a sponsorship tier below.</p>
+<!-- SPONSORS SECTION -->
+<section id="sponsors" class="max-w-5xl mx-auto p-4 md:p-6 mt-16 md:mt-20 fade-in">
+  <h3 class="text-2xl md:text-3xl font-bold text-center mobile-section-text">Become a Corporate Sponsor</h3>
+  <p class="mt-3 text-gray-300 text-center max-w-2xl mx-auto mobile-text">Support Apollo STEM Academy and help us provide free, high-quality education to students worldwide. Choose a sponsorship tier below.</p>
   <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- Platinum --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-yellow-300">Platinum</h4><p class="text-3xl font-extrabold mt-2">$10,000</p><p class="text-sm text-gray-400 mt-2">Logo on homepage, quarterly reports, social media spotlights, and priority support.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center">Become a Sponsor</a></div>
-    <!-- Gold --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-yellow-400">Gold</h4><p class="text-3xl font-extrabold mt-2">$5,000</p><p class="text-sm text-gray-400 mt-2">Logo on sponsors page, mention in newsletters, and social media shoutout.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center">Become a Sponsor</a></div>
-    <!-- Silver --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-gray-300">Silver</h4><p class="text-3xl font-extrabold mt-2">$2,500</p><p class="text-sm text-gray-400 mt-2">Name listed on sponsors page and in quarterly updates.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-gray-600 text-white rounded font-semibold hover:scale-105 transition block text-center">Become a Sponsor</a></div>
-    <!-- Bronze --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-orange-400">Bronze</h4><p class="text-3xl font-extrabold mt-2">$1,000</p><p class="text-sm text-gray-400 mt-2">Name listed on sponsors page.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-orange-600 text-white rounded font-semibold hover:scale-105 transition block text-center">Become a Sponsor</a></div>
+    <!-- Platinum -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-yellow-300">Platinum</h4>
+      <p class="text-3xl font-extrabold mt-2">$10,000</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Logo on homepage, quarterly reports, social media spotlights, and priority support.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Become a Sponsor</a>
+    </div>
+    <!-- Gold -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-yellow-400">Gold</h4>
+      <p class="text-3xl font-extrabold mt-2">$5,000</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Logo on sponsors page, mention in newsletters, and social media shoutout.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Become a Sponsor</a>
+    </div>
+    <!-- Silver -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-gray-300">Silver</h4>
+      <p class="text-3xl font-extrabold mt-2">$2,500</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Name listed on sponsors page and in quarterly updates.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-gray-600 text-white rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Become a Sponsor</a>
+    </div>
+    <!-- Bronze -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-orange-400">Bronze</h4>
+      <p class="text-3xl font-extrabold mt-2">$1,000</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Name listed on sponsors page.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfOTUSXYJbQM9S9k5sTrr6TNTWnAGGwc4G3wjNuSMTdJdmaUQ/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-orange-600 text-white rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Become a Sponsor</a>
+    </div>
   </div>
 </section>
 
-<!-- INDIVIDUAL SPONSORS -->
-<section class="max-w-5xl mx-auto p-4 md:p-6 mt-10 md:mt-12 fade-in">
-  <h3 class="text-2xl md:text-3xl font-bold text-center">Become an Individual Sponsor</h3>
-  <p class="mt-3 text-gray-300 text-center max-w-2xl mx-auto">Join our Innovator's Circle and help power the next generation of STEM leaders. Every contribution makes a difference.</p>
+<!-- INDIVIDUAL SPONSORSHIP SECTION -->
+<section class="max-w-5xl mx-auto p-4 md:p-6 mt-16 md:mt-20 fade-in">
+  <h3 class="text-2xl md:text-3xl font-bold text-center mobile-section-text">Become an Individual Sponsor</h3>
+  <p class="mt-3 text-gray-300 text-center max-w-2xl mx-auto mobile-text">Join our Innovator's Circle and help power the next generation of STEM leaders. Every contribution makes a difference.</p>
+  
   <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <!-- Friend --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-green-400">Friend of the Academy</h4><p class="text-3xl font-extrabold mt-2">$50</p><p class="text-sm text-gray-400 mt-2">Our sincere gratitude and personal thank-you email.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-green-600 text-white rounded font-semibold hover:scale-105 transition block text-center">Sponsor Now</a></div>
-    <!-- Ally --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-blue-400">Learning Ally</h4><p class="text-3xl font-extrabold mt-2">$100</p><p class="text-sm text-gray-400 mt-2">Name in "Community Supporters" section and optional public thank-you post.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:scale-105 transition block text-center">Sponsor Now</a></div>
-    <!-- Patron --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-purple-400">STEM Patron</h4><p class="text-3xl font-extrabold mt-2">$250</p><p class="text-sm text-gray-400 mt-2">Name on main sponsors page, newsletter shout-out, and digital certificate.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-purple-600 text-white rounded font-semibold hover:scale-105 transition block text-center">Sponsor Now</a></div>
-    <!-- Visionary --><div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center"><h4 class="text-xl font-bold text-yellow-300">Visionary Benefactor</h4><p class="text-3xl font-extrabold mt-2">$500+</p><p class="text-sm text-gray-400 mt-2">Name on "Wall of Honor", personalized thank-you letter, and exclusive digital badge.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center">Become a Visionary</a></div>
+    <!-- Friend of the Academy - $50 -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-green-400">Friend of the Academy</h4>
+      <p class="text-3xl font-extrabold mt-2">$50</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Our sincere gratitude and personal thank-you email for supporting student learning journeys.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-green-600 text-white rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Sponsor Now</a>
+    </div>
+
+    <!-- Learning Ally - $100 -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-blue-400">Learning Ally</h4>
+      <p class="text-3xl font-extrabold mt-2">$100</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Name in "Community Supporters" section and optional public thank-you post.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Sponsor Now</a>
+    </div>
+
+    <!-- STEM Patron - $250 -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-purple-400">STEM Patron</h4>
+      <p class="text-3xl font-extrabold mt-2">$250</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Name on main sponsors page, newsletter shout-out, and digital certificate.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-purple-600 text-white rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Sponsor Now</a>
+    </div>
+
+    <!-- Visionary Benefactor - $500+ -->
+    <div class="p-6 rounded-2xl glass border border-gray-700 flex flex-col items-center text-center mobile-spacing">
+      <h4 class="text-xl font-bold text-yellow-300">Visionary Benefactor</h4>
+      <p class="text-3xl font-extrabold mt-2">$500+</p>
+      <p class="text-sm text-gray-400 mt-2 mobile-text">Name on "Wall of Honor", personalized thank-you letter, and exclusive digital badge.</p>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLScLO2Phm8JrRMYl_uaoxPTO5hPMEe2YDj5SxarrNJ4D9z2L9g/viewform?usp=publish-editor" target="_blank" rel="noopener noreferrer" class="mt-4 px-4 py-2 bg-yellow-400 text-black rounded font-semibold hover:scale-105 transition block text-center mobile-touch">Become a Visionary</a>
+    </div>
+  </div>
+
+  <!-- Additional Information -->
+  <div class="mt-8 text-center">
+    <p class="text-sm text-gray-400 max-w-2xl mx-auto mobile-text">
+      All individual sponsors are automatically enrolled in our "Innovator's Circle" and will receive updates on how their support is making a difference in students' lives.
+    </p>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="max-w-6xl mx-auto p-4 md:p-6 mt-10 md:mt-12 border-t border-gray-800 text-gray-400">
+<footer class="max-w-7xl mx-auto p-4 md:p-6 mt-20 border-t border-gray-800 text-gray-400">
   <div class="flex flex-col md:flex-row items-center justify-between gap-4">
     <div>
-      © Apollo STEM Academy — Private Beta<br>
-      7511 Main Street, Suite 200, Frisco, TX 75034
+      <div>© Apollo STEM Academy — Private Beta</div>
+      <div class="text-xs mt-2 text-gray-500 mobile-text">
+        Apollo STEM Academy<br>
+        7511 Main Street, Suite 200<br>
+        Frisco, TX 75034
+      </div>
     </div>
-    <div class="text-sm">Privacy • Terms • Contact: <a href="mailto:Robinpandey@apollotunes.com" class="text-yellow-300">Robinpandey@apollotunes.com</a></div>
+    <div class="text-sm mobile-text">Privacy • Terms • Contact: <a href="mailto:Robinpandey@apollotunes.com" class="text-yellow-300 hover:text-yellow-200">Robinpandey@apollotunes.com</a></div>
   </div>
 </footer>
 
-<!-- ===== SCRIPTS ===== -->
+<!-- JavaScript -->
 <script>
-/* ----------  AI BACKEND (CLOUDFLARE WORKER)  ---------- */
-const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
+  // Mobile menu toggle
+  document.getElementById('mobileMenuButton')?.addEventListener('click', () => {
+    const nav = document.getElementById('mobileNav');
+    nav.classList.toggle('hidden');
+  });
+  
+  // Mobile login
+  document.getElementById('mobileAccessBtn')?.addEventListener('click', () => {
+    const code = prompt('Enter your private access code');
+    if(code === 'apollo-beta-2025') showDashboard();
+  });
+  
+  // Desktop login
+  document.getElementById('accessBtn')?.addEventListener('click', () => {
+    const code = prompt('Enter your private access code');
+    if(code === 'apollo-beta-2025') showDashboard();
+  });
+  
+  document.getElementById('openDashboard')?.addEventListener('click', () => {
+    const code = prompt('Enter your private access code');
+    if(code === 'apollo-beta-2025') showDashboard();
+  });
+  
+  function showDashboard(){
+    const el = document.createElement('div');
+    el.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999">
+        <div style="background:#0b1220;padding:32px;border-radius:16px;max-width:900px;width:100%;border:1px solid #1f2937">
+          <h3 style="font-size:24px;margin-bottom:12px;color:white">Student Dashboard (Private)</h3>
+          <p style="color:#9ca3af;margin-bottom:16px">Welcome! Links below are for your learning resources.</p>
+          <ul style="color:#e5e7eb;margin-bottom:20px">
+            <li style="margin-bottom:8px">- <a href="#tools" style="color:#60a5fa">Open AI Learning Tools</a></li>
+            <li style="margin-bottom:8px">- Submit assignments via Google Form</li>
+            <li style="margin-bottom:8px">- View progress (email us to enable)</li>
+          </ul>
+          <div style="text-align:right">
+            <button id="closeDash" style="padding:10px 20px;background:#1f2937;border-radius:8px;color:white">Close</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    document.getElementById('closeDash').addEventListener('click', () => document.body.removeChild(el));
+  }
 
-async function callRealAI(prompt){
-  try{
-    const res = await fetch(CLOUDFLARE_WORKER_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt})
-    });
-    const data = await res.json();
-    return data.success ? data.answer : `Error: ${data.error}`;
-  }catch(err){
-    return `AI unavailable: ${err.message}`;
+  // ===== AI TOOLS FUNCTIONS =====
+  const CLOUDFLARE_WORKER_URL = "https://apollostemacademy.revanaglobal.workers.dev/";
+
+  // Math Problem Solver
+  async function solveMath() {
+    const problem = document.getElementById('mathProblem').value;
+    const solutionDiv = document.getElementById('mathSolution');
+    
+    if (!problem) {
+      solutionDiv.innerHTML = '<p class="text-red-400">Please enter a math problem</p>';
+      solutionDiv.classList.remove('hidden');
+      return;
+    }
+    
+    solutionDiv.innerHTML = '<p class="text-yellow-400">🤔 AI is solving your problem...</p>';
+    solutionDiv.classList.remove('hidden');
+    
+    try {
+      const prompt = `Solve this math problem step by step for a student: ${problem}. Explain each step clearly.`;
+      const response = await callRealAI(prompt);
+      solutionDiv.innerHTML = `<div class="text-green-300 whitespace-pre-line">${response}</div>`;
+    } catch (error) {
+      solutionDiv.innerHTML = '<p class="text-red-400">Error: Could not solve problem</p>';
+    }
+  }
+
+  // Worksheet Generator
+  async function generateWorksheet() {
+    const topic = document.getElementById('worksheetTopic').value;
+    const grade = document.getElementById('worksheetGrade').value;
+    const outputDiv = document.getElementById('worksheetOutput');
+    
+    if (!topic) {
+      outputDiv.innerHTML = '<p class="text-red-400">Please enter a topic</p>';
+      outputDiv.classList.remove('hidden');
+      return;
+    }
+    
+    outputDiv.innerHTML = '<p class="text-yellow-400">📚 AI is creating your worksheet...</p>';
+    outputDiv.classList.remove('hidden');
+    
+    try {
+      const prompt = `Create a ${grade} math worksheet about ${topic} with 5 problems. Include answers at the end. Make it appropriate for ${grade} level.`;
+      const response = await callRealAI(prompt);
+      outputDiv.innerHTML = `<div class="text-white whitespace-pre-line">${response}</div>`;
+    } catch (error) {
+      outputDiv.innerHTML = '<p class="text-red-400">Error: Could not generate worksheet</p>';
+    }
+  }
+
+  // Science Lab Assistant
+  async function explainScience() {
+    const experiment = document.getElementById('scienceExperiment').value;
+    const outputDiv = document.getElementById('scienceOutput');
+    
+    if (!experiment) {
+      outputDiv.innerHTML = '<p class="text-red-400">Please describe an experiment or science concept</p>';
+      outputDiv.classList.remove('hidden');
+      return;
+    }
+    
+    outputDiv.innerHTML = '<p class="text-yellow-400">🔬 AI is explaining the science...</p>';
+    outputDiv.classList.remove('hidden');
+    
+    try {
+      const response = await fetch(CLOUDFLARE_WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: experiment,
+          feature: 'science-lab'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        outputDiv.innerHTML = `<div class="text-white whitespace-pre-line">${data.answer}</div>`;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      outputDiv.innerHTML = `<p class="text-red-400">Error: Could not generate science explanation</p>`;
+    }
+  }
+
+ // Study Guide Generator
+async function generateStudyGuide() {
+  const topic = document.getElementById('studyTopic').value;
+  const level = document.getElementById('studyLevel').value;
+  const outputDiv = document.getElementById('studyOutput');
+  
+  if (!topic) {
+    outputDiv.innerHTML = '<p class="text-red-400">Please enter a study topic</p>';
+    outputDiv.classList.remove('hidden');
+    return;
+  }
+  
+  outputDiv.innerHTML = '<p class="text-yellow-400">📚 AI is creating your study guide...</p>';
+  outputDiv.classList.remove('hidden');
+  
+  try {
+    const prompt = `Create a comprehensive study guide about ${topic} for ${level} level. Include key concepts, definitions, examples, practice questions, and memory tricks.`;
+    const response = await callRealAI(prompt);
+    outputDiv.innerHTML = `<div class="text-white whitespace-pre-line">${response}</div>`;
+  } catch (error) {
+    outputDiv.innerHTML = '<p class="text-red-400">Error: Could not generate study guide</p>';
   }
 }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        outputDiv.innerHTML = `<div class="text-white whitespace-pre-line">${data.answer}</div>`;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      outputDiv.innerHTML = `<p class="text-red-400">Error: Could not generate study guide</p>`;
+    }
+  }
 
-/* ----------  MATH SOLVER  ---------- */
-async function solveMath(){
-  const problem = document.getElementById('mathProblem').value.trim();
-  const box = document.getElementById('mathSolution');
-  if(!problem){box.innerHTML='<p class="text-red-400">Please enter a math problem</p>';box.classList.remove('hidden');return;}
-  box.innerHTML='<p class="text-yellow-400">🤔 AI is solving your problem...</p>';box.classList.remove('hidden');
-  const answer = await callRealAI(`Solve this math problem step by step for a student: ${problem}. Explain each step clearly.`);
-  box.innerHTML=`<div class="text-green-300 whitespace-pre-line">${answer}</div>`;
-}
-
-/* ----------  WORKSHEET GENERATOR  ---------- */
-async function generateWorksheet(){
-  const topic = document.getElementById('worksheetTopic').value.trim();
-  const grade = document.getElementById('worksheetGrade').value;
-  const box = document.getElementById('worksheetOutput');
-  if(!topic){box.innerHTML='<p class="text-red-400">Please enter a topic</p>';box.classList.remove('hidden');return;}
-  box.innerHTML='<p class="text-yellow-400">📚 AI is creating your worksheet...</p>';box.classList.remove('hidden');
-  const answer = await callRealAI(`Create a ${grade} math worksheet about ${topic} with 5 problems. Include answers at the end. Make it appropriate for ${grade} level.`);
-  box.innerHTML=`<div class="text-white whitespace-pre-line">${answer}</div>`;
-}
-
-/* ----------  MOBILE MENU  ---------- */
-document.getElementById('mobileMenuButton')?.addEventListener('click',()=>{
-  document.getElementById('mobileNav').classList.toggle('hidden');
-});
-
-/* ----------  LOGIN  ---------- */
-['accessBtn','mobileAccessBtn','openDashboard'].forEach(id=>{
-  document.getElementById(id)?.addEventListener('click',()=>{
-    const code=prompt('Enter your private access code');
-    if(code==='apollo-beta-2025') showDashboard();
-  });
-});
-
-function showDashboard(){
-  const el=document.createElement('div');
-  el.innerHTML=`<div style="position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999"><div style="background:#0b1220;padding:24px;border-radius:12px;max-width:900px;width:100%"><h3 style="font-size:20px;margin-bottom:8px">Student Dashboard (Private)</h3><p style="color:#9ca3af;margin-bottom:12px">Welcome! Links below are for your learning resources.</p><ul style="color:#e5e7eb;"><li>- <a href="#subjects">Open Subject Tutors</a></li><li>- Submit assignments via Google Form</li><li>- View progress (email us to enable)</li></ul><div style="margin-top:12px;text-align:right"><button id="closeDash" style="padding:8px 12px;background:#111827;border-radius:8px">Close</button></div></div></div>`;
-  document.body.appendChild(el);
-  document.getElementById('closeDash').addEventListener('click',()=>document.body.removeChild(el));
-}
+  // Generic AI Call Function
+  async function callRealAI(prompt) {
+    try {
+      const response = await fetch(CLOUDFLARE_WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt: prompt })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.answer;
+      } else {
+        throw new Error(data.error || 'Unknown error from worker');
+      }
+      
+    } catch (error) {
+      console.error('Error calling AI worker:', error);
+      return `🚨 AI Service Temporarily Unavailable\n\nError: ${error.message}\n\nPlease try again in a few moments.`;
+    }
+  }
 </script>
 </body>
 </html>
