@@ -1,37 +1,78 @@
 # Apollo STEM Academy
 
-Apollo STEM Academy is a private online school offering AI-powered and teacher-guided tutoring for students in grades 1–12 in Math, Science, and Language Arts. This repository contains a modern, cinematic, single-page HTML template for a zero-to-low-cost MVP launch.
+A private, AI-powered STEM learning platform built for Grades 1–12.
 
-## Features
+## 🚀 Architecture
+- **Web App (`apps/web`)**: React + Vite + Tailwind CSS. Hosted on Vercel/Cloudflare Pages.
+- **API (`apps/api`)**: Hono + Cloudflare Workers. Powered by D1 Database and Gemini AI.
+- **Packages**: Shared types and database schemas.
 
-- **AI Tutoring Embed**: HuggingChat iframe for real-time AI Q&A.
-- **Subjects Overview**: Math, Science, and Language Arts with practice links.
-- **Limited Free Enrollment**: Highlighted promotional spots for founding students.
-- **Volunteer Signup**: Google Form or Formspree integration to recruit volunteers.
-- **Private Student Dashboard**: Client-side password protection for early access.
-- **Responsive Design**: Tailwind CSS for modern and cinematic appearance.
-- **Easy Hosting**: Deploy via GitHub Pages or any static site host.
+## 🛠️ Getting Started
+```bash
+# Install dependencies
+npm install
 
-## Setup
+# Run Web App
+npm run dev:web
 
-1. Clone or download the repository.
-2. Replace placeholder URLs in `index.html`:
-   - `ENROLL_FORM_URL` → Google Form for student enrollment.
-   - `VOLUNTEER_FORM_URL` → Google Form or Formspree URL for volunteers.
-3. Set `BETA_PASS` in the script section to your private access password.
-4. Push to GitHub in a repository named `your-username.github.io` to host via GitHub Pages.
+# Run API (Local Wrangler)
+npm run dev:api
+```
 
-## Usage
+## 🌍 Deployment
+### 1. API (Cloudflare)
+- Create a D1 Database: `wrangler d1 create apollo-db`
+- Apply schema: `wrangler d1 execute apollo-db --file=packages/db/schema.sql`
+- Set `GEMINI_API_KEY` secret.
+- Deploy: `npm run deploy:api`
 
-- Students can access the site using the private code.
-- Volunteers can fill out the signup form to help with tutoring, mentoring, or curriculum review.
-- Admins can update the spots counter manually or integrate with Google Sheets or Firebase for live updates.
+### 2. Web (Vercel)
+- Push to GitHub.
+- Import to Vercel.
+- Set Root Directory to `apps/web`.
+- Build Command: `npm run build` (In root, or `tsc -b && vite build` in dir).
+- Framework: Vite.
 
-## Notes
+## 🔐 Security
+- Auth: Google OAuth (Firebase/Cloudflare friendly).
+- Data: D1 SQL for transactional integrity.
+- Privacy: Role-based access (Student, Teacher, Volunteer, Parent).
 
-- For production AI tutoring with OpenAI or Gemini, use a secure serverless proxy to keep API keys private.
-- This is designed for a zero-to-low-cost MVP launch; enhancements like Firebase Auth, analytics, or advanced dashboards can be added later.
+## 🚀 Features
 
-## License
+-   **AI Learning Hub**: 5 specialized tools for Math, Science, Language Arts, and Study Coaching.
+-   **Multi-Role Dashboards**:
+    -   **Students**: Interactive assignments, progress analytics, and gamified growth.
+    -   **Teachers**: Class management, AI assignment suite, and deep performance analytics.
+    -   **Volunteers**: Mentorship tracking, alerts for struggling students, and messaging.
+-   **Intelligent Reporting**: Automated narrative reports synthesized from student activity.
+-   **Role-Based Access**: Secure JWT authentication with Google OAuth integration.
 
-This project is free to use and modify for educational purposes.
+## 🛠️ Setup & Development
+
+### Prerequisites
+- Node.js (v18+)
+- Wrangler (for Cloudflare Workers/D1)
+
+### Installation
+```bash
+npm install
+```
+
+### Local Development
+```bash
+# Start the web frontend
+npm run dev:web
+
+# Start the API backend
+npm run dev:api
+```
+
+### Database Management
+```bash
+# Initialize local D1 database
+npx wrangler d1 execute apollo-db --file=packages/db/schema.sql --local
+```
+
+## 📜 License
+This project is private and intended for the Apollo STEM Academy educational platform.

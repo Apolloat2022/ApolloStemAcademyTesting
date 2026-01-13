@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "strict": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "baseUrl": ".",
+        "paths": {
+            "@apollo/types": [
+                "packages/types/index.ts"
+            ],
+            "@apollo/db": [
+                "packages/db/schema.sql"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
