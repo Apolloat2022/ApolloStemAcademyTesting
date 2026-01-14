@@ -10,6 +10,7 @@ export const aiService = {
         try {
             const response = await fetch(CLOUDFLARE_WORKER_URL, {
                 method: 'POST',
+                mode: 'cors',
                 headers: {
                     'Content-Type': 'application/json',
                 },
