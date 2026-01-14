@@ -6,7 +6,8 @@ compatibility_date = "2024-01-01"
 # Placeholder for Gemini API Key - will be set via wrangler secrets
 # GEMINI_API_KEY = "..."
 
-[[d1_databases]]
-binding = "DB"
-database_name = "apollo-db"
-database_id = "your-d1-id-here" # To be updated after creation
+# D1 Database - Commented out until database is created
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "apollo-db"
+# database_id = "your-d1-id-here" # To be updated after creation
