@@ -13,7 +13,8 @@ export const aiService = {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ prompt: fullPrompt }),
-                referrerPolicy: 'no-referrer'
+                mode: 'cors',
+                credentials: 'omit'
             });
 
             console.log('[AI Service] Response Status:', response.status);
