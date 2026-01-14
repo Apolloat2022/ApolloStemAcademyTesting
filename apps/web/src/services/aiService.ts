@@ -1,7 +1,4 @@
-// Use relative path to leverage Vite proxy in dev, or absolute URL in prod if env var set
-export const AI_WORKER_URL = import.meta.env.PROD
-    ? 'https://apolloacademyaiteacher.revanaglobal.workers.dev/'
-    : '/ai-worker';
+export const AI_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
 
 export const aiService = {
     generate: async (prompt: string, context?: string) => {
@@ -15,9 +12,7 @@ export const aiService = {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ prompt: fullPrompt }),
-                mode: 'cors',
-                credentials: 'omit'
+                body: JSON.stringify({ prompt: fullPrompt })
             });
 
             console.log('[AI Service] Response Status:', response.status);
