@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Send, Search, Settings, MoreHorizontal, CheckCheck, Smile, Sparkles, BrainCircuit, X } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../services/api';
 import { authService } from '../services/authService';
 
 const MessagingCenter: React.FC = () => {
@@ -14,10 +14,7 @@ const MessagingCenter: React.FC = () => {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                const token = authService.getToken();
-                const res = await axios.get(`/api/messages/${selectedChat}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get(`/api/messages/${selectedChat}`);
                 setMessages(res.data);
             } catch (err) {
                 console.error('Failed to fetch messages', err);
@@ -33,13 +30,10 @@ const MessagingCenter: React.FC = () => {
         const tempMsg = message;
         setMessage('');
         try {
-            const token = authService.getToken();
-            await axios.post('/api/messages', {
+            await api.post('/api/messages', {
                 recipientId: selectedChat,
                 content: tempMsg,
                 role: authService.getUser()?.role
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             // Refresh local state will happen via interval or manual append
             setMessages(prev => [...prev, {

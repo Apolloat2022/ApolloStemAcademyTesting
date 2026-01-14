@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Users, BookOpen, ClipboardCheck, BarChart3, Sparkles, X, BrainCircuit, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { authService } from '../services/authService';
+import { api } from '../services/api';
+
 
 const TeacherDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -15,10 +15,7 @@ const TeacherDashboard: React.FC = () => {
     useEffect(() => {
         const fetchPending = async () => {
             try {
-                const token = authService.getToken();
-                const res = await axios.get('/api/submissions/pending', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const res = await api.get('/api/submissions/pending');
                 setPendingSubmissions(res.data);
             } catch (err) {
                 console.error('Failed to fetch pending submissions', err);

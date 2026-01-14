@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { TrendingUp, Award, Zap, BrainCircuit, Target, Star, Lock } from 'lucide-react';
-import axios from 'axios';
-import { authService } from '../services/authService';
+import { api } from '../services/api';
+
 
 const MyProgress: React.FC = () => {
     const [mastery, setMastery] = useState<any[]>([]);
@@ -12,10 +12,9 @@ const MyProgress: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const token = authService.getToken();
                 const [mRes, aRes] = await Promise.all([
-                    axios.get('/api/student/mastery', { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get('/api/student/achievements', { headers: { Authorization: `Bearer ${token}` } })
+                    api.get('/api/student/mastery'),
+                    api.get('/api/student/achievements')
                 ]);
                 setMastery(mRes.data);
                 setAchievements(aRes.data);

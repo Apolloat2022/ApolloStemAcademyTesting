@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Users, ShieldCheck, ArrowLeft, Sparkles, Heart } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/authService';
-import axios from 'axios';
+import { api } from '../services/api';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -14,7 +14,7 @@ const Login: React.FC = () => {
         setIsLoading(true);
         try {
             // In a real app, send the credential (id_token) to your backend
-            const res = await axios.post('/auth/google', {
+            const res = await api.post('/auth/google', {
                 token: credentialResponse.credential,
                 role: selectedRole
             });

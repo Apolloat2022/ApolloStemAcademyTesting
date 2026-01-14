@@ -12,7 +12,7 @@ import {
     X,
     Award
 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../services/api';
 
 const StudentDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -24,10 +24,10 @@ const StudentDashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const token = authService.getToken();
+                // api client automatically handles token
                 const [rRes, aRes] = await Promise.all([
-                    axios.get('/api/student/recommendations', { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get('/api/student/achievements', { headers: { Authorization: `Bearer ${token}` } })
+                    api.get('/api/student/recommendations'),
+                    api.get('/api/student/achievements')
                 ]);
                 setRecs(rRes.data);
 

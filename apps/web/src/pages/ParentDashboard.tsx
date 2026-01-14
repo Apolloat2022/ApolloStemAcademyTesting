@@ -12,7 +12,7 @@ import {
     Sparkles,
     Info
 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../services/api';
 import { authService } from '../services/authService';
 
 const ParentDashboard: React.FC = () => {
@@ -23,10 +23,9 @@ const ParentDashboard: React.FC = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const token = authService.getToken();
                 const [dataRes, summaryRes] = await Promise.all([
-                    axios.get('/api/parent/child-data', { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get('/api/parent/ai-summary', { headers: { Authorization: `Bearer ${token}` } })
+                    api.get('/api/parent/child-data'),
+                    api.get('/api/parent/ai-summary')
                 ]);
                 setData(dataRes.data);
                 setSummary(summaryRes.data.summary);

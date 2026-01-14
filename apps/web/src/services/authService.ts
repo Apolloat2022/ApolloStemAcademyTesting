@@ -1,9 +1,7 @@
 import axios from 'axios';
 import type { User } from '@apollo/types';
 
-const API_URL = import.meta.env.DEV
-    ? 'http://localhost:8787'
-    : 'https://apolloacademyaiteacher.revanaglobal.workers.dev';
+const API_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev';
 
 export const authService = {
     setToken: (token: string) => {

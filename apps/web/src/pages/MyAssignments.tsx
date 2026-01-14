@@ -2,8 +2,8 @@ import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { ClipboardList, Clock, CheckCircle2, Play, AlertCircle, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { authService } from '../services/authService';
+import { api } from '../services/api';
+
 
 const MyAssignments: React.FC = () => {
     const navigate = useNavigate();
@@ -49,11 +49,8 @@ const MyAssignments: React.FC = () => {
 
     const handleSubmission = async (assignmentId: string) => {
         try {
-            const token = authService.getToken();
-            await axios.post(`/api/assignments/${assignmentId}/submit`, {
+            await api.post(`/api/assignments/${assignmentId}/submit`, {
                 content: "AI-assisted assignment content completed via Hub."
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             alert('Mission Accomplished! Your work has been submitted.');
             // In a real app, we would refresh the list

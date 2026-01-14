@@ -81,7 +81,7 @@ const LandingPage: React.FC = () => {
                         <a href="#enroll" className="hover:text-white transition-colors">Enroll</a>
                         <a href="#sponsors" className="hover:text-white transition-colors">Sponsors</a>
                         <button onClick={() => navigate('/login')} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl hover:scale-105 transition-all shadow-lg shadow-indigo-600/20 font-black">
-                            Student Area
+                            Login
                         </button>
                     </div>
 
@@ -91,18 +91,20 @@ const LandingPage: React.FC = () => {
                 </div>
 
                 {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <div className="md:hidden absolute top-full left-0 w-full glass border-b border-white/10 p-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
-                        <a href="#about" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>About</a>
-                        <a href="#tools" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>AI Tools</a>
-                        <a href="#enroll" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>Enroll</a>
-                        <button onClick={() => navigate('/login')} className="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold">Student Login</button>
-                    </div>
-                )}
-            </nav>
+                {
+                    isMenuOpen && (
+                        <div className="md:hidden absolute top-full left-0 w-full glass border-b border-white/10 p-6 flex flex-col gap-4 animate-in slide-in-from-top-2">
+                            <a href="#about" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>About</a>
+                            <a href="#tools" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>AI Tools</a>
+                            <a href="#enroll" className="text-gray-400 font-bold" onClick={() => setIsMenuOpen(false)}>Enroll</a>
+                            <button onClick={() => navigate('/login')} className="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold">Login</button>
+                        </div>
+                    )
+                }
+            </nav >
 
             {/* Hero Section */}
-            <header className="pt-40 pb-20 px-6 relative overflow-hidden">
+            < header className="pt-40 pb-20 px-6 relative overflow-hidden" >
                 <div className="hero-starfield" />
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/10 blur-[150px] rounded-full -mr-80 -mt-40" />
 
@@ -175,10 +177,10 @@ const LandingPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </header>
+            </header >
 
             {/* Shared AI Tools Suite */}
-            <section id="tools" className="py-32 px-6">
+            < section id="tools" className="py-32 px-6" >
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-20">
                         <h2 className="text-4xl font-black mb-4">Apollo AI Lab</h2>
@@ -280,10 +282,10 @@ const LandingPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* About Section (Cinematic Description) */}
-            <section id="about" className="py-32 px-6 border-t border-white/5 bg-white/[0.01]">
+            < section id="about" className="py-32 px-6 border-t border-white/5 bg-white/[0.01]" >
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
                     <div className="flex-1">
                         <h2 className="text-4xl font-black mb-8">A Private, Guided Approach</h2>
@@ -316,10 +318,10 @@ const LandingPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Enrollment Section */}
-            <section id="enroll" className="py-32 px-6">
+            < section id="enroll" className="py-32 px-6" >
                 <div className="max-w-5xl mx-auto glass p-12 md:p-20 rounded-[60px] border-white/5 bg-gradient-to-br from-indigo-600/20 via-transparent to-transparent text-center relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-10 opacity-10"><Zap size={200} /></div>
                     <h2 className="text-4xl md:text-5xl font-black mb-8">Limited Founding Enrollment</h2>
@@ -339,10 +341,10 @@ const LandingPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Sponsorship Section */}
-            <section id="sponsors" className="py-32 px-6 bg-white/[0.01]">
+            < section id="sponsors" className="py-32 px-6 bg-white/[0.01]" >
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-20">
                         <h2 className="text-4xl font-black mb-4">Corporate & Individual Sponsors</h2>
@@ -384,10 +386,10 @@ const LandingPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Footer */}
-            <footer className="py-20 px-6 border-t border-white/5 glass bg-black/50">
+            < footer className="py-20 px-6 border-t border-white/5 glass bg-black/50" >
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
                     <div className="flex flex-col md:flex-row items-center gap-6">
                         <img src="/logo.png" alt="Logo" className="w-12 h-12 shadow-2xl shadow-indigo-600/20" />
@@ -405,8 +407,8 @@ const LandingPage: React.FC = () => {
                         © 2026 Apollo Technologies US. <br /> All Rights Reserved.
                     </div>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 };
 
