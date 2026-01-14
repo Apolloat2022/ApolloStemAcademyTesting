@@ -28,11 +28,12 @@ const LandingPage: React.FC = () => {
     const [mathProblem, setMathProblem] = useState('');
     const [mathSolution, setMathSolution] = useState<string | null>(null);
     const [worksheetTopic, setWorksheetTopic] = useState('');
-    const [worksheetGrade] = useState('Grade 1');
+    const [worksheetGrade, setWorksheetGrade] = useState('Grade 1');
     const [worksheetOutput, setWorksheetOutput] = useState<string | null>(null);
     const [scienceTopic, setScienceTopic] = useState('');
     const [scienceOutput, setScienceOutput] = useState<string | null>(null);
     const [studyTopic, setStudyTopic] = useState('');
+    const [studyLevel, setStudyLevel] = useState('Elementary School');
     const [studyOutput, setStudyOutput] = useState<string | null>(null);
 
     const [loadingTool, setLoadingTool] = useState<string | null>(null);
@@ -192,14 +193,34 @@ const LandingPage: React.FC = () => {
                             <h3 className="text-2xl font-black mb-4">Worksheet Engine</h3>
                             <input
                                 type="text" value={worksheetTopic} onChange={(e) => setWorksheetTopic(e.target.value)}
-                                placeholder="Topic (e.g. Fractions)"
+                                placeholder="Topic (e.g. Fractions, Algebra)"
                                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs"
                             />
-                            <button
-                                onClick={() => callAI(`Create a ${worksheetGrade} worksheet for ${worksheetTopic}`, 'worksheet', setWorksheetOutput)}
-                                className="w-full py-3 bg-green-600 rounded-xl font-bold text-xs uppercase"
+                            <select
+                                value={worksheetGrade}
+                                onChange={(e) => setWorksheetGrade(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs text-white"
                             >
-                                Generate PDF
+                                <option value="Kindergarten">Kindergarten</option>
+                                <option value="Grade 1">Grade 1</option>
+                                <option value="Grade 2">Grade 2</option>
+                                <option value="Grade 3">Grade 3</option>
+                                <option value="Grade 4">Grade 4</option>
+                                <option value="Grade 5">Grade 5</option>
+                                <option value="Grade 6">Grade 6</option>
+                                <option value="Grade 7">Grade 7</option>
+                                <option value="Grade 8">Grade 8</option>
+                                <option value="Grade 9">Grade 9</option>
+                                <option value="Grade 10">Grade 10</option>
+                                <option value="Grade 11">Grade 11</option>
+                                <option value="Grade 12">Grade 12</option>
+                            </select>
+                            <button
+                                onClick={() => callAI(`Create a ${worksheetGrade} worksheet for ${worksheetTopic} with 5 problems. Include answers at the end. Make it appropriate for ${worksheetGrade} level.`, 'worksheet', setWorksheetOutput)}
+                                disabled={loadingTool === 'worksheet'}
+                                className="w-full py-3 bg-green-600 rounded-xl font-bold text-xs uppercase hover:scale-105 transition-all"
+                            >
+                                {loadingTool === 'worksheet' ? 'Generating...' : 'Generate PDF Worksheet'}
                             </button>
                             {worksheetOutput && <div className="mt-4 p-4 text-[10px] text-gray-400 text-left bg-black/30 rounded-xl max-h-40 overflow-auto">{worksheetOutput}</div>}
                         </div>
@@ -210,16 +231,18 @@ const LandingPage: React.FC = () => {
                                 <Beaker size={32} />
                             </div>
                             <h3 className="text-2xl font-black mb-4">Science Lab</h3>
-                            <input
-                                type="text" value={scienceTopic} onChange={(e) => setScienceTopic(e.target.value)}
-                                placeholder="Explain Concept (e.g. Solar Cells)"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs"
+                            <textarea
+                                value={scienceTopic} onChange={(e) => setScienceTopic(e.target.value)}
+                                placeholder="Describe an experiment or ask about a science concept... (e.g. Photosynthesis, Newton's Laws)"
+                                rows={3}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs resize-none"
                             />
                             <button
-                                onClick={() => callAI(`Explain this science concept: ${scienceTopic}`, 'science', setScienceOutput)}
-                                className="w-full py-3 bg-purple-600 rounded-xl font-bold text-xs uppercase"
+                                onClick={() => callAI(`Explain this science experiment/concept for a student: ${scienceTopic}. Provide materials, steps, scientific principles, safety, and real-world applications.`, 'science', setScienceOutput)}
+                                disabled={loadingTool === 'science'}
+                                className="w-full py-3 bg-purple-600 rounded-xl font-bold text-xs uppercase hover:scale-105 transition-all"
                             >
-                                Explain Concept
+                                {loadingTool === 'science' ? 'Analyzing...' : 'Explain Science Concept'}
                             </button>
                             {scienceOutput && <div className="mt-4 p-4 text-[10px] text-gray-400 text-left bg-black/30 rounded-xl max-h-40 overflow-auto">{scienceOutput}</div>}
                         </div>
@@ -232,14 +255,25 @@ const LandingPage: React.FC = () => {
                             <h3 className="text-2xl font-black mb-4">Study Assistant</h3>
                             <input
                                 type="text" value={studyTopic} onChange={(e) => setStudyTopic(e.target.value)}
-                                placeholder="Exam Topic"
+                                placeholder="Topic (e.g. World War II, Algebra)"
                                 className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs"
                             />
-                            <button
-                                onClick={() => callAI(`Create a study guide for ${studyTopic}`, 'study', setStudyOutput)}
-                                className="w-full py-3 bg-amber-600 rounded-xl font-bold text-xs uppercase"
+                            <select
+                                value={studyLevel}
+                                onChange={(e) => setStudyLevel(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 mb-4 text-xs text-white"
                             >
-                                Build Guide
+                                <option value="Elementary School">Elementary School</option>
+                                <option value="Middle School">Middle School</option>
+                                <option value="High School">High School</option>
+                                <option value="College">College</option>
+                            </select>
+                            <button
+                                onClick={() => callAI(`Create a comprehensive study guide about ${studyTopic} for ${studyLevel} level. Include key concepts, definitions, examples, practice questions, and memory tricks.`, 'study', setStudyOutput)}
+                                disabled={loadingTool === 'study'}
+                                className="w-full py-3 bg-amber-600 rounded-xl font-bold text-xs uppercase hover:scale-105 transition-all"
+                            >
+                                {loadingTool === 'study' ? 'Building...' : 'Build Study Guide'}
                             </button>
                             {studyOutput && <div className="mt-4 p-4 text-[10px] text-gray-400 text-left bg-black/30 rounded-xl max-h-40 overflow-auto">{studyOutput}</div>}
                         </div>
