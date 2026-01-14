@@ -11,6 +11,8 @@ interface AIToolProps {
     systemPrompt: string;
 }
 
+import { aiService } from '../services/aiService';
+
 const AITool: React.FC<AIToolProps> = ({ title, description, placeholder, icon, systemPrompt }) => {
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
@@ -23,19 +25,10 @@ const AITool: React.FC<AIToolProps> = ({ title, description, placeholder, icon, 
         setResult('');
 
         try {
-            const res = await fetch('https://apolloacademyaiteacher.revanaglobal.workers.dev/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: `${systemPrompt}\n\nStudent Query: ${input}` })
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                setResult(data.answer);
-            } else {
-                setResult(`Error: ${data.error}`);
-            }
+            const answer = await aiService.generate(input, systemPrompt);
+            setResult(answer);
         } catch (err: any) {
+            console.error('AITool Error:', err);
             setResult(`AI unavailable: ${err.message}`);
         } finally {
             setIsLoading(false);
