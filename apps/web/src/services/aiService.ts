@@ -1,4 +1,7 @@
-export const AI_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
+// Use relative path to leverage Vite proxy in dev, or absolute URL in prod if env var set
+export const AI_WORKER_URL = import.meta.env.PROD
+    ? 'https://apolloacademyaiteacher.revanaglobal.workers.dev/'
+    : '/ai-worker';
 
 export const aiService = {
     generate: async (prompt: string, context?: string) => {
