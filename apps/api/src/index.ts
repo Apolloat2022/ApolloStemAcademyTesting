@@ -233,7 +233,7 @@ app.get('/teacher/dashboard', authMiddleware, roleMiddleware(['teacher']), (c) =
 })
 
 // Centralized AI Tool Endpoint
-app.post('/api/ai/generate', authMiddleware, async (c) => {
+app.post('/api/ai/generate', async (c) => {
   const { prompt, toolKey } = await c.req.json();
   const payload = c.get('jwtPayload') as any;
   const apiKey = (c.env as any).GEMINI_API_KEY;
