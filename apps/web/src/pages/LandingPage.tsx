@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, Star, Globe, Heart, BookOpen, Microscope, Code, Calculator, Atom, Zap, FileText, UserPlus } from 'lucide-react';
 
-const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
+const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/api/ai/generate';
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -24,16 +24,29 @@ const LandingPage: React.FC = () => {
     const [studyOutput, setStudyOutput] = useState<{ text: string, color: string } | null>(null);
 
     // Call AI Helper
-    const callRealAI = async (prompt: string) => {
+    const callRealAI = async (prompt: string, toolKey: string = 'general') => {
         try {
             const res = await fetch(CLOUDFLARE_WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt })
+                body: JSON.stringify({ prompt, toolKey })
             });
-            const data = await res.json();
-            return data.success ? data.answer : `Error: ${data.error}`;
+
+            const text = await res.text();
+            console.log('AI Worker Raw Response:', text);
+
+            try {
+                const data = JSON.parse(text);
+                return data.success ? data.answer : `Error: ${data.error}`;
+            } catch (jsonErr) {
+                // If it's not JSON, maybe it's the raw answer or an error message
+                if (text.length > 0 && (text.includes('{') || text.includes('}'))) {
+                    throw new Error(`Invalid JSON format: ${text.substring(0, 50)}...`);
+                }
+                return text || 'Empty response from AI worker';
+            }
         } catch (err: any) {
+            console.error('AI Fetch Error:', err);
             return `AI unavailable: ${err.message}`;
         }
     };
@@ -45,7 +58,7 @@ const LandingPage: React.FC = () => {
             return;
         }
         setMathOutput({ text: '🤔 AI is solving your problem...', color: 'text-yellow-400' });
-        const answer = await callRealAI(`Solve this math problem step by step for a student: ${mathProblem}. Explain each step clearly.`);
+        const answer = await callRealAI(`Solve this math problem step by step for a student: ${mathProblem}. Explain each step clearly.`, 'math_solver');
         setMathOutput({ text: answer, color: 'text-green-300' });
     };
 
@@ -55,7 +68,7 @@ const LandingPage: React.FC = () => {
             return;
         }
         setWorksheetOutput({ text: '📘 AI is creating your worksheet...', color: 'text-yellow-400' });
-        const answer = await callRealAI(`Create a ${worksheetGrade} math worksheet about ${worksheetTopic} with 5 problems. Include answers at the end. Make it appropriate for ${worksheetGrade} level.`);
+        const answer = await callRealAI(`Create a ${worksheetGrade} math worksheet about ${worksheetTopic} with 5 problems. Include answers at the end. Make it appropriate for ${worksheetGrade} level.`, 'worksheet_gen');
         setWorksheetOutput({ text: answer, color: 'text-white' });
     };
 
@@ -65,7 +78,7 @@ const LandingPage: React.FC = () => {
             return;
         }
         setScienceOutput({ text: '🧪 AI is explaining the science...', color: 'text-yellow-400' });
-        const answer = await callRealAI(`Explain this science experiment/concept for a student: ${scienceTopic}. Provide materials, steps, scientific principles, safety, and real-world applications.`);
+        const answer = await callRealAI(`Explain this science experiment/concept for a student: ${scienceTopic}. Provide materials, steps, scientific principles, safety, and real-world applications.`, 'science_lab');
         setScienceOutput({ text: answer, color: 'text-white' });
     };
 
@@ -75,7 +88,7 @@ const LandingPage: React.FC = () => {
             return;
         }
         setStudyOutput({ text: '📘 AI is creating your study guide...', color: 'text-yellow-400' });
-        const answer = await callRealAI(`Create a comprehensive study guide about ${studyTopic} for ${studyLevel} level. Include key concepts, definitions, examples, practice questions, and memory tricks.`);
+        const answer = await callRealAI(`Create a comprehensive study guide about ${studyTopic} for ${studyLevel} level. Include key concepts, definitions, examples, practice questions, and memory tricks.`, 'study_guide');
         setStudyOutput({ text: answer, color: 'text-white' });
     };
 
@@ -85,7 +98,7 @@ const LandingPage: React.FC = () => {
             <header className="max-w-6xl mx-auto p-4 md:p-6 fade-in sticky top-0 z-50 bg-gray-900/90 backdrop-blur-md border-b border-gray-800">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 md:gap-4">
-                        <img src="/logo.png" alt="Apollo Logo" className="w-[500px] h-auto object-contain" />
+                        <img src="/logo.png" alt="Apollo Logo" style={{ height: '220px', width: 'auto', minWidth: '220px' }} className="object-contain" />
                         <div>
                             <h1 className="text-lg md:text-xl font-semibold tracking-tight">Apollo STEM Academy</h1>
                             <p className="text-xs text-gray-400 hidden md:block">AI-Powered Learning Tools</p>
@@ -95,7 +108,7 @@ const LandingPage: React.FC = () => {
                         <a href="#about" className="text-gray-300 hover:text-white transition">About</a>
                         <a href="#subjects" className="text-gray-300 hover:text-white transition">Subjects</a>
                         <a href="#tools" className="text-gray-300 hover:text-white transition">AI Tools</a>
-                        <a href="#volunteer" className="text-gray-300 hover:text-white transition">Volunteer</a>
+                        <a href="#enroll" className="text-gray-300 hover:text-white transition">Volunteer</a>
                         <a href="#sponsors" className="text-gray-300 hover:text-white transition">Sponsors</a>
                         <button onClick={() => navigate('/login')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-white transition">Student Login</button>
                     </nav>
@@ -108,7 +121,7 @@ const LandingPage: React.FC = () => {
                         <a href="#about" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>About</a>
                         <a href="#subjects" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Subjects</a>
                         <a href="#tools" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>AI Tools</a>
-                        <a href="#volunteer" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Volunteer</a>
+                        <a href="#enroll" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Volunteer</a>
                         <a href="#sponsors" className="text-gray-300 hover:text-white" onClick={() => setMobileMenuOpen(false)}>Sponsors</a>
                         <button onClick={() => navigate('/login')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded w-fit">Student Login</button>
                     </nav>
@@ -141,7 +154,7 @@ const LandingPage: React.FC = () => {
             </main>
 
             {/* ABOUT SECTION */}
-            <section id="about" className="py-20 bg-gray-900 border-y border-gray-800">
+            <section id="about" className="py-20 bg-gray-900 border-y border-gray-800 scroll-mt-64">
                 <div className="max-w-6xl mx-auto px-4 md:px-6">
                     <div className="text-center mb-16">
                         <h3 className="text-3xl font-bold mb-4 text-white">Why Apollo STEM Academy?</h3>
@@ -168,7 +181,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* SUBJECTS SECTION */}
-            <section id="subjects" className="py-20">
+            <section id="subjects" className="py-20 scroll-mt-64">
                 <div className="max-w-6xl mx-auto px-4 md:px-6">
                     <div className="text-center mb-16">
                         <h3 className="text-3xl font-bold mb-4 text-white">Core Subjects</h3>
@@ -193,7 +206,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* AI TOOLS */}
-            <section id="tools" className="max-w-6xl mx-auto px-4 md:px-6 py-20 border-t border-gray-800">
+            <section id="tools" className="max-w-6xl mx-auto px-4 md:px-6 py-20 border-t border-gray-800 scroll-mt-64">
                 <div className="text-center mb-12">
                     <span className="text-indigo-400 font-bold tracking-widest uppercase text-xs">Interactive Demo</span>
                     <h3 className="text-3xl font-bold mt-2">Free AI Learning Tools</h3>
@@ -305,7 +318,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* ENROLLMENT & VOLUNTEER */}
-            <section id="enroll" className="py-20 bg-indigo-900/10 border-t border-gray-800">
+            <section id="enroll" className="py-20 bg-indigo-900/10 border-t border-gray-800 scroll-mt-64">
                 <div className="max-w-4xl mx-auto px-6 text-center">
                     <h2 className="text-3xl font-bold mb-4 text-white">Join Our Mission</h2>
                     <div className="mb-10 p-6 bg-yellow-400/10 border border-yellow-400/20 rounded-2xl max-w-2xl mx-auto">
@@ -332,7 +345,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* SPONSORS */}
-            <section id="sponsors" className="py-20 border-t border-gray-800 bg-black/20">
+            <section id="sponsors" className="py-20 border-t border-gray-800 bg-black/20 scroll-mt-64">
                 <div className="max-w-6xl mx-auto px-6">
                     <div className="text-center mb-16">
                         <h3 className="text-3xl font-bold text-white mb-2">Our Sponsors</h3>

@@ -1,5 +1,5 @@
 // Use deployed Cloudflare Worker (same as working HTML file)
-const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/';
+const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/api/ai/generate';
 
 export const aiService = {
     generate: async (prompt: string, context?: string) => {
