@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Plus, BookOpen, Clock, Users, Sparkles, Filter, ChevronRight, Calculator, Beaker, FileText, BookCopy, BrainCircuit, X, CheckCircle2 } from 'lucide-react';
 
-const AssignmentSuite: React.FC = () => {
+const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [isGeneratingIntervention, setIsGeneratingIntervention] = useState(false);
     const [interventionTask, setInterventionTask] = useState<any>(null);
+    const [autoIntervene, setAutoIntervene] = useState(false);
 
     const activeAssignments = [
         { id: '1', title: 'Algebra Foundations', tool: 'Math Solver', toolIcon: <Calculator size={14} />, students: 24, submitted: 18, dueDate: 'Jan 15, 2026', status: 'Active' },
@@ -37,18 +38,20 @@ const AssignmentSuite: React.FC = () => {
     return (
         <DashboardLayout>
             <div className="p-8">
-                <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
-                        <h1 className="text-4xl font-bold mb-2 text-white">Assignment Suite</h1>
-                        <p className="text-gray-400">Create and curate AI-enhanced learning experiences for your class.</p>
-                    </div>
-                    <button
-                        onClick={() => setIsCreating(true)}
-                        className="bg-apollo-indigo hover:bg-apollo-indigo/80 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-apollo-indigo/20"
-                    >
-                        <Plus size={20} /> Create Assignment
-                    </button>
-                </header>
+                {!embedMode && (
+                    <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div>
+                            <h1 className="text-4xl font-bold mb-2 text-white">Assignment Suite</h1>
+                            <p className="text-gray-400">Create and curate AI-enhanced learning experiences for your class.</p>
+                        </div>
+                        <button
+                            onClick={() => setIsCreating(true)}
+                            className="bg-apollo-indigo hover:bg-apollo-indigo/80 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-apollo-indigo/20"
+                        >
+                            <Plus size={20} /> Create Assignment
+                        </button>
+                    </header>
+                )}
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Active Assignments List */}
@@ -153,6 +156,22 @@ const AssignmentSuite: React.FC = () => {
                                     </button>
                                 </>
                             )}
+                        </div>
+
+                        <div className="glass rounded-3xl p-8 border-white/5">
+                            <h2 className="text-xl font-bold text-white mb-6">Mastery Guard</h2>
+                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between mb-4">
+                                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Auto-Intervention</span>
+                                <button
+                                    onClick={() => setAutoIntervene(!autoIntervene)}
+                                    className={`w-12 h-6 rounded-full transition-all relative ${autoIntervene ? 'bg-apollo-indigo' : 'bg-gray-700'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${autoIntervene ? 'left-7' : 'left-1'}`} />
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-gray-500 leading-relaxed italic">
+                                Automatically publish remedial tasks for students falling below **65%** mastery in core subjects.
+                            </p>
                         </div>
 
                         <div className="glass rounded-3xl p-8 border-white/5">

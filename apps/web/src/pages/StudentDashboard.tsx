@@ -141,7 +141,15 @@ const StudentDashboard: React.FC = () => {
                                     <button className="px-5 py-2.5 bg-apollo-indigo text-white text-[10px] font-black rounded-xl hover:scale-110 transition-all uppercase tracking-widest shadow-lg shadow-apollo-indigo/20">Resume Mission</button>
                                 </div>
                             )) : (
-                                <div className="text-center py-10 opacity-50 italic text-gray-500">No active missions. Generate some in the AI Hub!</div>
+                                <div className="text-center py-10">
+                                    <p className="opacity-50 italic text-gray-500 mb-6">No active missions. Generate some in the AI Hub!</p>
+                                    <button
+                                        onClick={() => navigate('/student/hub')}
+                                        className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-apollo-indigo hover:text-white transition-all shadow-xl"
+                                    >
+                                        Start New Mission
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

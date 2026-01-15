@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Search, Filter, MoreVertical, GraduationCap, TrendingUp, Mail, ShieldAlert } from 'lucide-react';
+import { Search, Filter, MoreVertical, GraduationCap, TrendingUp, Mail, ShieldAlert, Plus, X, Fingerprint, UserPlus } from 'lucide-react';
 
 const ClassRoster: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newStudent, setNewStudent] = useState({ name: '', email: '', studentId: '' });
 
     const students = [
         { id: '1', name: 'John Doe', level: 'Grade 8', status: 'Active', progress: 85, lastActive: '2 hours ago', alert: false },
@@ -38,6 +40,12 @@ const ClassRoster: React.FC = () => {
                         </div>
                         <button className="p-3 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-all">
                             <Filter size={20} />
+                        </button>
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-apollo-indigo text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-apollo-indigo/20"
+                        >
+                            <Plus size={20} /> Add Student
                         </button>
                     </div>
                 </header>
@@ -120,6 +128,70 @@ const ClassRoster: React.FC = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Add Student Modal */}
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+                        <div className="glass w-full max-w-md rounded-[40px] border-white/10 p-10 animate-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-3xl font-black text-white">Add Student</h2>
+                                <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-white/5 rounded-full transition-all text-gray-500 hover:text-white">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Full Name</label>
+                                    <div className="relative">
+                                        <UserPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Robin Explorer"
+                                            value={newStudent.name}
+                                            onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-apollo-indigo"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Email Address</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                        <input
+                                            type="email"
+                                            placeholder="robin@apollo.edu"
+                                            value={newStudent.email}
+                                            onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-apollo-indigo"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 block">Student ID Number</label>
+                                    <div className="relative">
+                                        <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                                        <input
+                                            type="text"
+                                            placeholder="AS-2026-X83"
+                                            value={newStudent.studentId}
+                                            onChange={(e) => setNewStudent({ ...newStudent, studentId: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-apollo-indigo"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="pt-4">
+                                    <button
+                                        onClick={() => setIsAddModalOpen(false)}
+                                        className="w-full py-5 bg-apollo-indigo text-white font-black rounded-3xl hover:scale-105 transition-all shadow-[0_20px_40px_rgba(79,70,229,0.3)]"
+                                    >
+                                        Enroll Student
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );
