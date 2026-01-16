@@ -51,12 +51,26 @@ const MyAssignments: React.FC = () => {
     return (
         <DashboardLayout>
             <div className="p-8">
-                <header className="mb-10 flex justify-between items-end">
+                <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-bold mb-2">My Assignments</h1>
                         <p className="text-gray-400">Keep track of your active learning tasks.</p>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    await api.post('/api/google/sync');
+                                    alert('Google Classroom Linked & Synced!');
+                                } catch (e) {
+                                    alert('Failed to sync');
+                                }
+                            }}
+                            className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-2 rounded-2xl font-bold flex items-center gap-2 transition-all transition-colors"
+                        >
+                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            Link Google Classroom
+                        </button>
                         <div className="glass px-6 py-2 rounded-2xl flex items-center gap-2 border-white/5">
                             <AlertCircle size={18} className="text-red-400" />
                             <span className="text-sm font-bold">2 Due Soon</span>

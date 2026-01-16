@@ -14,17 +14,22 @@ const TeacherDashboard: React.FC = () => {
     const [pendingSubmissions, setPendingSubmissions] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'overview' | 'assignments'>('overview');
     const [isSyncing, setIsSyncing] = useState(false);
+    const [stats, setStats] = useState({ students: 0, assignments: 0, submissions: 0, engagement: 0 });
 
     useEffect(() => {
-        const fetchPending = async () => {
+        const fetchDashboardData = async () => {
             try {
-                const res = await api.get('/api/submissions/pending');
-                setPendingSubmissions(res.data);
+                const [pendingRes, statsRes] = await Promise.all([
+                    api.get('/api/submissions/pending'),
+                    api.get('/api/teacher/dashboard-stats')
+                ]);
+                setPendingSubmissions(pendingRes.data);
+                setStats(statsRes.data);
             } catch (err) {
-                console.error('Failed to fetch pending submissions', err);
+                console.error('Failed to fetch dashboard data', err);
             }
         };
-        fetchPending();
+        fetchDashboardData();
     }, []);
 
     const handleReview = (item: any) => {
@@ -85,19 +90,18 @@ const TeacherDashboard: React.FC = () => {
                         <div className="glass rounded-3xl p-8 border-apollo-indigo/20">
                             <div className="flex items-center gap-4 mb-6">
                                 <div className="w-16 h-16 bg-apollo-indigo/20 rounded-full flex items-center justify-center text-2xl font-bold text-apollo-indigo">
-                                    {reviewItem.name[0]}
+                                    {reviewItem.student_name ? reviewItem.student_name[0] : '?'}
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white">{reviewItem.name}</h2>
-                                    <p className="text-gray-400">{reviewItem.topic} • Submitted {reviewItem.time}</p>
+                                    <h2 className="text-2xl font-bold text-white">{reviewItem.student_name}</h2>
+                                    <p className="text-gray-400">{reviewItem.title || 'Assignment'} • Submitted {new Date(reviewItem.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
 
                             <div className="bg-white/5 rounded-2xl p-6 border border-white/5 min-h-[300px]">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Student Work</h3>
                                 <p className="text-gray-200 leading-relaxed">
-                                    "In this experiment, I observed that the rate of reaction increased when the concentration of the reactant was higher.
-                                    I believe this happens because there are more particles in the same volume, leading to more frequent collisions..."
+                                    {reviewItem.content}
                                 </p>
                             </div>
 
@@ -185,7 +189,7 @@ const TeacherDashboard: React.FC = () => {
                                             <Users className="text-blue-400" />
                                         </div>
                                         <h3 className="text-lg font-bold mb-2">Class Roster</h3>
-                                        <p className="text-3xl font-bold text-white mb-1">5</p>
+                                        <p className="text-3xl font-bold text-white mb-1">{stats.students}</p>
                                         <p className="text-gray-400 text-sm">Students Enrolled</p>
                                     </div>
                                     <div onClick={() => setActiveTab('assignments')} className="glass p-6 rounded-3xl border-white/5 bg-yellow-500/5 hover:bg-yellow-500/10 transition-all cursor-pointer group">
@@ -193,7 +197,7 @@ const TeacherDashboard: React.FC = () => {
                                             <BookOpen className="text-yellow-400" />
                                         </div>
                                         <h3 className="text-lg font-bold mb-2">Assignments</h3>
-                                        <p className="text-3xl font-bold text-white mb-1">3</p>
+                                        <p className="text-3xl font-bold text-white mb-1">{stats.assignments}</p>
                                         <p className="text-gray-400 text-sm">Active Tasks</p>
                                     </div>
                                     <div className="glass p-6 rounded-3xl border-white/5 bg-green-500/5 cursor-default">
@@ -201,7 +205,7 @@ const TeacherDashboard: React.FC = () => {
                                             <ClipboardCheck className="text-green-400" />
                                         </div>
                                         <h3 className="text-lg font-bold mb-2">Review Queue</h3>
-                                        <p className="text-3xl font-bold text-white mb-1">8</p>
+                                        <p className="text-3xl font-bold text-white mb-1">{stats.submissions}</p>
                                         <p className="text-gray-400 text-sm">New Submissions</p>
                                     </div>
                                     <div onClick={() => navigate('/teacher/progress')} className="glass p-6 rounded-3xl border-white/5 bg-purple-500/5 hover:bg-purple-500/10 transition-all cursor-pointer group">
@@ -209,7 +213,7 @@ const TeacherDashboard: React.FC = () => {
                                             <BarChart3 className="text-purple-400" />
                                         </div>
                                         <h3 className="text-lg font-bold mb-2">Analytics</h3>
-                                        <p className="text-3xl font-bold text-white mb-1">92%</p>
+                                        <p className="text-3xl font-bold text-white mb-1">{stats.engagement}%</p>
                                         <p className="text-gray-400 text-sm">Class Engagement</p>
                                     </div>
                                 </div>

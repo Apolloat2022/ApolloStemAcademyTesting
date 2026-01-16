@@ -113,3 +113,8 @@ CREATE TABLE student_mastery (
     PRIMARY KEY (student_id, subject),
     FOREIGN KEY (student_id) REFERENCES users(id)
 );
+
+-- SEED DATA
+INSERT OR IGNORE INTO users (id, email, name, role) VALUES ('default_teacher', 'teacher@apollo.edu', 'Ms. Frizzle', 'teacher');
+INSERT OR IGNORE INTO classes (id, name, teacher_id) VALUES ('default_class', 'General STEM', 'default_teacher');
+

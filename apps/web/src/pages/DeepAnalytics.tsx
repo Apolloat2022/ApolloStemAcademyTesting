@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { TrendingUp, Users, Target, Zap, ChevronRight, Sparkles } from 'lucide-react';
+import { TrendingUp, Users, Target, Zap, ChevronRight, Sparkles, ShieldAlert } from 'lucide-react';
+import { api } from '../services/api';
 
 const DeepAnalytics: React.FC = () => {
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
     const metrics = [
         { label: 'Avg. Attendance', value: '96%', change: '+2%', icon: Users, color: 'text-blue-400' },
         { label: 'Concept Mastery', value: '78%', change: '+5%', icon: Target, color: 'text-green-400' },
@@ -15,6 +19,20 @@ const DeepAnalytics: React.FC = () => {
         { topic: 'Probability Basics', mastery: 64, status: 'Struggling' },
         { topic: 'Exponents & Radicals', mastery: 42, status: 'Struggling' },
     ];
+
+    useEffect(() => {
+        const fetchInsights = async () => {
+            try {
+                const res = await api.get('/api/alerts/stuck');
+                setAlerts(res.data || []);
+            } catch (err) {
+                console.error("Failed to fetch alerts", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchInsights();
+    }, []);
 
     return (
         <DashboardLayout>
@@ -101,20 +119,30 @@ const DeepAnalytics: React.FC = () => {
                         <Sparkles size={24} className="text-yellow-400" />
                         <h2 className="text-2xl font-bold text-white">AI-Driven Instruction Plan</h2>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="p-6 bg-white/5 border border-white/5 rounded-2xl">
-                            <h3 className="text-lg font-bold text-yellow-400 mb-2">Immediate Focus</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed">
-                                4 students are currently stuck on "Probability Basics". Consider a live simulation or "Science Lab" assignment to clarify independent vs. dependent events.
-                            </p>
+                    {loading ? <div className="text-gray-400 animate-pulse">Analyzing class patterns...</div> : (
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="p-6 bg-white/5 border border-white/5 rounded-2xl relative overflow-hidden group hover:border-red-500/30 transition-all">
+                                {alerts.length > 0 && <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full m-4 animate-ping" />}
+                                <h3 className="text-lg font-bold text-red-400 mb-2 flex items-center gap-2">
+                                    <ShieldAlert size={18} /> Immediate Focus
+                                </h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">
+                                    {alerts.length > 0
+                                        ? `${alerts.length} student${alerts.length > 1 ? 's' : ''} triggered 'Stuck' alerts. This indicates repeated struggles with recent concepts.`
+                                        : "No critical alerts detected today. Class engagement is optimal."}
+                                </p>
+                                {alerts.length > 0 && (
+                                    <button className="mt-4 text-xs font-bold text-red-300 hover:text-white underline">View {alerts.length} Students</button>
+                                )}
+                            </div>
+                            <div className="p-6 bg-white/5 border border-white/5 rounded-2xl">
+                                <h3 className="text-lg font-bold text-green-400 mb-2">Stretch Goals</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">
+                                    12 students have achieved over 90% in "Quadratic Equations". They are ready for "Introduction to Polynomials" using the Worksheet Generator for extension tasks.
+                                </p>
+                            </div>
                         </div>
-                        <div className="p-6 bg-white/5 border border-white/5 rounded-2xl">
-                            <h3 className="text-lg font-bold text-green-400 mb-2">Stretch Goals</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed">
-                                12 students have achieved over 90% in "Quadratic Equations". They are ready for "Introduction to Polynomials" using the Worksheet Generator for extension tasks.
-                            </p>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </DashboardLayout>

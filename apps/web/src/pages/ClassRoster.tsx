@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Search, Filter, MoreVertical, GraduationCap, TrendingUp, Mail, ShieldAlert, Plus, X, Fingerprint, UserPlus } from 'lucide-react';
+import { api } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const ClassRoster: React.FC = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
     const [newStudent, setNewStudent] = useState({ name: '', email: '', studentId: '' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const students = [
         { id: '1', name: 'John Doe', level: 'Grade 8', status: 'Active', progress: 85, lastActive: '2 hours ago', alert: false },
@@ -15,13 +20,29 @@ const ClassRoster: React.FC = () => {
         { id: '5', name: 'Kevin Lee', level: 'Grade 8', status: 'Inactive', progress: 45, lastActive: '3 days ago', alert: true },
     ];
 
+    const handleAddStudent = async () => {
+        setIsSubmitting(true);
+        try {
+            await api.post('/api/students', newStudent);
+            alert('Student enrolled successfully!');
+            setIsAddModalOpen(false);
+            setNewStudent({ name: '', email: '', studentId: '' });
+            // Ideally refresh list here
+        } catch (err: any) {
+            console.error(err);
+            alert('Failed to enroll student');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const filteredStudents = students.filter(s =>
         s.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <DashboardLayout>
-            <div className="p-8">
+            <div className="p-8" onClick={() => setOpenMenuId(null)}>
                 <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-bold mb-2 text-white">Class Roster</h1>
@@ -60,7 +81,7 @@ const ClassRoster: React.FC = () => {
                     </div>
 
                     {filteredStudents.map((student) => (
-                        <div key={student.id} className="glass px-8 py-6 rounded-3xl border-white/5 hover:border-apollo-indigo/30 transition-all group flex items-center justify-between">
+                        <div key={student.id} className="glass px-8 py-6 rounded-3xl border-white/5 hover:border-apollo-indigo/30 transition-all group flex items-center justify-between relative">
                             <div className="flex-1 flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xl text-white ${student.alert ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-apollo-indigo/20 text-apollo-indigo border border-apollo-indigo/30'}`}>
                                     {student.name[0]}
@@ -107,22 +128,34 @@ const ClassRoster: React.FC = () => {
                             </div>
 
                             <div className="w-10 flex justify-end">
-                                <div className="relative group/menu">
-                                    <button className="p-2 text-gray-500 hover:text-white transition-all">
+                                <div className="relative">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenMenuId(openMenuId === student.id ? null : student.id);
+                                        }}
+                                        className="p-2 text-gray-500 hover:text-white transition-all"
+                                    >
                                         <MoreVertical size={20} />
                                     </button>
-                                    <div className="absolute right-0 top-full mt-2 w-48 glass rounded-2xl border-white/10 p-2 hidden group-hover/menu:block z-50 shadow-2xl">
-                                        <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-xl transition-all">
-                                            <TrendingUp size={16} /> View Analytics
-                                        </button>
-                                        <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-xl transition-all">
-                                            <Mail size={16} /> Message Student
-                                        </button>
-                                        <div className="h-px bg-white/5 my-2" />
-                                        <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-400/5 rounded-xl transition-all">
-                                            <ShieldAlert size={16} /> AI Intervention
-                                        </button>
-                                    </div>
+
+                                    {openMenuId === student.id && (
+                                        <div className="absolute right-0 top-full mt-2 w-48 glass rounded-2xl border-white/10 p-2 z-50 shadow-2xl bg-[#0f0f13] animate-in fade-in zoom-in-95 duration-100">
+                                            <button
+                                                onClick={() => navigate(`/teacher/progress?studentId=${student.id}`)}
+                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-xl transition-all"
+                                            >
+                                                <TrendingUp size={16} /> View Analytics
+                                            </button>
+                                            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-xl transition-all">
+                                                <Mail size={16} /> Message Student
+                                            </button>
+                                            <div className="h-px bg-white/5 my-2" />
+                                            <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-400/5 rounded-xl transition-all">
+                                                <ShieldAlert size={16} /> AI Intervention
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -182,10 +215,11 @@ const ClassRoster: React.FC = () => {
                                 </div>
                                 <div className="pt-4">
                                     <button
-                                        onClick={() => setIsAddModalOpen(false)}
-                                        className="w-full py-5 bg-apollo-indigo text-white font-black rounded-3xl hover:scale-105 transition-all shadow-[0_20px_40px_rgba(79,70,229,0.3)]"
+                                        onClick={handleAddStudent}
+                                        disabled={isSubmitting}
+                                        className="w-full py-5 bg-apollo-indigo text-white font-black rounded-3xl hover:scale-105 transition-all shadow-[0_20px_40px_rgba(79,70,229,0.3)] disabled:opacity-50"
                                     >
-                                        Enroll Student
+                                        {isSubmitting ? 'Enrolling...' : 'Enroll Student'}
                                     </button>
                                 </div>
                             </div>

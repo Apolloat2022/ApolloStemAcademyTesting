@@ -160,6 +160,63 @@ app.get('/api/student/assignments', authMiddleware, roleMiddleware(['student']),
   return c.json(assignments);
 });
 
+// Teacher Assignment Management
+app.get('/api/assignments', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  if (c.env.DB) {
+    try {
+      const { results } = await c.env.DB.prepare(
+        'SELECT a.*, (SELECT COUNT(*) FROM submissions s WHERE s.assignment_id = a.id) as submitted_count, (SELECT COUNT(*) FROM enrollments e WHERE e.class_id = a.class_id) as total_students FROM assignments a ORDER BY created_at DESC'
+      ).all();
+      return c.json(results);
+    } catch (e) {
+      console.error('Fetch assignments failed', e);
+      return c.json([], 500);
+    }
+  }
+  return c.json([]);
+});
+
+app.post('/api/assignments', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  const { title, subject, tool, description, due_date, class_id } = await c.req.json();
+  const id = crypto.randomUUID();
+
+  if (c.env.DB) {
+    await c.env.DB.prepare(
+      'INSERT INTO assignments (id, class_id, title, description, due_date) VALUES (?, ?, ?, ?, ?)'
+    ).bind(id, class_id || 'default_class', title, description, due_date).run();
+  }
+  return c.json({ success: true, id });
+});
+
+app.delete('/api/assignments/:id', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  const id = c.req.param('id');
+  if (c.env.DB) {
+    await c.env.DB.prepare('DELETE FROM assignments WHERE id = ?').bind(id).run();
+  }
+  return c.json({ success: true });
+});
+
+// Student Management
+app.post('/api/students', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  const { name, email, studentId } = await c.req.json();
+  const id = crypto.randomUUID();
+
+  if (c.env.DB) {
+    // Add to Users and Enrollments
+    try {
+      await c.env.DB.batch([
+        c.env.DB.prepare('INSERT OR IGNORE INTO authorized_access (email, role) VALUES (?, ?)').bind(email, 'student'),
+        c.env.DB.prepare('INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)').bind(id, email, name, 'student'),
+        c.env.DB.prepare('INSERT INTO enrollments (student_id, class_id) VALUES (?, ?)').bind(id, 'default_class')
+      ]);
+      return c.json({ success: true, id });
+    } catch (e: any) {
+      return c.json({ success: false, error: e.message }, 500);
+    }
+  }
+  return c.json({ success: true, id: 'mock_id' });
+});
+
 app.post('/api/assignments/:assignmentId/submit', authMiddleware, async (c) => {
   const assignmentId = c.req.param('assignmentId')
   const { content } = await c.req.json()
@@ -369,6 +426,36 @@ async function checkAchievements(db: D1Database, userId: string) {
 
 app.get('/teacher/dashboard', authMiddleware, roleMiddleware(['teacher']), (c) => {
   return c.json({ message: 'Welcome to the Teacher Dashboard' })
+})
+
+app.get('/api/teacher/dashboard-stats', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  const stats = {
+    students: 0,
+    assignments: 0,
+    submissions: 0,
+    engagement: 0
+  };
+
+  if (c.env.DB) {
+    try {
+      const studentCount = await c.env.DB.prepare('SELECT COUNT(*) as c FROM users WHERE role = "student"').first() as any;
+      const asgnCount = await c.env.DB.prepare('SELECT COUNT(*) as c FROM assignments').first() as any;
+      const subCount = await c.env.DB.prepare('SELECT COUNT(*) as c FROM submissions WHERE status = "submitted"').first() as any;
+
+      // Mock engagement based on recent logs
+      const logs = await c.env.DB.prepare('SELECT COUNT(*) as c FROM progress_logs WHERE created_at > datetime("now", "-7 days")').first() as any;
+      // Simple algorithm: engagement is high if more logs
+      stats.engagement = Math.min(100, 80 + (logs.c * 2));
+
+      stats.students = studentCount.c;
+      stats.assignments = asgnCount.c;
+      stats.submissions = subCount.c;
+    } catch (e) {
+      console.error('Stats fetch failed', e);
+    }
+  }
+
+  return c.json(stats);
 })
 
 // Shared AI Generation Logic

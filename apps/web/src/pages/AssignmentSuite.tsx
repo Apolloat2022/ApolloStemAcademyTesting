@@ -1,29 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, BookOpen, Clock, Users, Sparkles, Filter, ChevronRight, Calculator, Beaker, FileText, BookCopy, BrainCircuit, X, CheckCircle2 } from 'lucide-react';
+import { Plus, BookOpen, Clock, Users, Sparkles, Filter, ChevronRight, Calculator, Beaker, FileText, BookCopy, BrainCircuit, X, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
+import { api } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
+    const navigate = useNavigate();
     const [isCreating, setIsCreating] = useState(false);
     const [isGeneratingIntervention, setIsGeneratingIntervention] = useState(false);
     const [interventionTask, setInterventionTask] = useState<any>(null);
-    const [autoIntervene, setAutoIntervene] = useState(false);
+    const [assignments, setAssignments] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showDelete, setShowDelete] = useState<string | null>(null);
 
-    const activeAssignments = [
-        { id: '1', title: 'Algebra Foundations', tool: 'Math Solver', toolIcon: <Calculator size={14} />, students: 24, submitted: 18, dueDate: 'Jan 15, 2026', status: 'Active' },
-        { id: '2', title: 'Photosynthesis Lab', tool: 'Science Lab', toolIcon: <Beaker size={14} />, students: 24, submitted: 5, dueDate: 'Jan 18, 2026', status: 'Active' },
-        { id: '3', title: 'Creative Writing Prep', tool: 'Study Guide', toolIcon: <BookCopy size={14} />, students: 24, submitted: 24, dueDate: 'Jan 10, 2026', status: 'Completed' },
-    ];
+    // Form Stats
+    const [newAsgn, setNewAsgn] = useState({ title: '', tool: 'Math Solver', description: 'Complete the following exercises.', due_date: 'Next Friday' });
+
+    const fetchAssignments = async () => {
+        try {
+            const res = await api.get('/api/assignments');
+            // If empty (first load), we might want to show placeholders or just empty state
+            // For now, we mix real results.
+            if (res.data && res.data.length > 0) {
+                setAssignments(res.data);
+            } else {
+                setAssignments([]);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAssignments();
+    }, []);
+
+    const handleCreate = async () => {
+        try {
+            await api.post('/api/assignments', {
+                ...newAsgn,
+                class_id: 'default_class', // Mock class
+                subject: newAsgn.tool.includes('Math') ? 'Math' : 'Science'
+            });
+            setIsCreating(false);
+            fetchAssignments(); // Refresh
+        } catch (err) {
+            alert('Failed to create assignment');
+        }
+    };
+
+    const handleDelete = async (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this assignment?')) {
+            try {
+                await api.delete(`/api/assignments/${id}`);
+                setAssignments(prev => prev.filter(a => a.id !== id));
+            } catch (err) {
+                alert('Delete failed');
+            }
+        }
+    };
 
     const aiTools = [
-        { name: 'Math Solver', icon: <Calculator className="text-blue-400" /> },
-        { name: 'Worksheet Gen', icon: <FileText className="text-yellow-400" /> },
-        { name: 'Science Lab', icon: <Beaker className="text-green-400" /> },
-        { name: 'Study Guide', icon: <BookCopy className="text-purple-400" /> },
+        { name: 'Math Solver', icon: <Calculator className="text-blue-400" />, path: '/student/hub?tool=math' },
+        { name: 'Worksheet Gen', icon: <FileText className="text-yellow-400" />, path: '/student/hub?tool=study' },
+        { name: 'Science Lab', icon: <Beaker className="text-green-400" />, path: '/student/hub?tool=science' },
+        { name: 'Study Guide', icon: <BookCopy className="text-purple-400" />, path: '/student/hub?tool=study' },
     ];
 
     const generateIntervention = () => {
         setIsGeneratingIntervention(true);
-        // Simulate Gemini calling /api/ai/generate
         setTimeout(() => {
             setInterventionTask({
                 title: 'Quadratic Intervention',
@@ -44,12 +92,23 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                             <h1 className="text-4xl font-bold mb-2 text-white">Assignment Suite</h1>
                             <p className="text-gray-400">Create and curate AI-enhanced learning experiences for your class.</p>
                         </div>
-                        <button
-                            onClick={() => setIsCreating(true)}
-                            className="bg-apollo-indigo hover:bg-apollo-indigo/80 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-apollo-indigo/20"
-                        >
-                            <Plus size={20} /> Create Assignment
-                        </button>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={async () => {
+                                    await api.post('/api/google/sync');
+                                    alert('Google Classroom Linked & Synced!');
+                                }}
+                                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all"
+                            >
+                                <RefreshCw size={20} /> Link Google Classroom
+                            </button>
+                            <button
+                                onClick={() => setIsCreating(true)}
+                                className="bg-apollo-indigo hover:bg-apollo-indigo/80 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all hover:scale-105 shadow-lg shadow-apollo-indigo/20"
+                            >
+                                <Plus size={20} /> Create Assignment
+                            </button>
+                        </div>
                     </header>
                 )}
 
@@ -65,53 +124,57 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                             </button>
                         </div>
 
-                        {activeAssignments.map((asgn) => (
-                            <div key={asgn.id} className="glass rounded-3xl p-6 border-white/5 hover:border-apollo-indigo/30 transition-all group relative overflow-hidden">
-                                {asgn.status === 'Completed' && (
-                                    <div className="absolute top-0 right-0 px-4 py-1 bg-green-500/10 text-green-400 text-[10px] font-black uppercase tracking-tighter rounded-bl-xl border-l border-b border-green-500/20">
-                                        All Submitted
-                                    </div>
-                                )}
-                                <div className="flex items-start justify-between gap-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className={`p-4 rounded-2xl ${asgn.status === 'Completed' ? 'bg-green-500/10' : 'bg-apollo-indigo/10'}`}>
-                                            <BookOpen className={asgn.status === 'Completed' ? 'text-green-400' : 'text-apollo-indigo'} size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-white mb-2">{asgn.title}</h3>
-                                            <div className="flex flex-wrap items-center gap-4">
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
-                                                    {asgn.toolIcon} {asgn.tool}
+                        {loading ? <div className="text-center text-gray-500 py-10">Loading tasks...</div> :
+                            assignments.length === 0 ? <div className="text-center text-gray-500 py-10 bg-white/5 rounded-3xl">No active assignments. Create one!</div> :
+                                assignments.map((asgn) => (
+                                    <div
+                                        key={asgn.id}
+                                        className="glass rounded-3xl p-6 border-white/5 hover:border-apollo-indigo/30 transition-all group relative overflow-hidden"
+                                        onMouseEnter={() => setShowDelete(asgn.id)}
+                                        onMouseLeave={() => setShowDelete(null)}
+                                    >
+                                        <div className="flex items-start justify-between gap-6">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`p-4 rounded-2xl ${asgn.submitted_count >= asgn.total_students && asgn.total_students > 0 ? 'bg-green-500/10' : 'bg-apollo-indigo/10'}`}>
+                                                    <BookOpen className={asgn.submitted_count >= asgn.total_students && asgn.total_students > 0 ? 'text-green-400' : 'text-apollo-indigo'} size={24} />
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                                                    <Users size={14} /> {asgn.submitted}/{asgn.students} Completed
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-2">{asgn.title}</h3>
+                                                    <div className="flex flex-wrap items-center gap-4">
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
+                                                            <Calculator size={12} /> {asgn.description?.substring(0, 20)}...
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                                                            <Users size={14} /> {asgn.submitted_count || 0} Submitted
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                                                            <Clock size={14} /> Due {asgn.due_date}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                                                    <Clock size={14} /> Due {asgn.dueDate}
-                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                {showDelete === asgn.id && (
+                                                    <button
+                                                        onClick={(e) => handleDelete(asgn.id, e)}
+                                                        className="p-3 text-red-400 hover:bg-red-400/10 rounded-2xl transition-all animate-in fade-in"
+                                                    >
+                                                        <Trash2 size={20} />
+                                                    </button>
+                                                )}
+                                                <button className="p-3 text-gray-500 hover:text-white transition-all group-hover:bg-white/5 rounded-2xl">
+                                                    <ChevronRight size={20} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <button className="p-3 text-gray-500 hover:text-white transition-all group-hover:bg-white/5 rounded-2xl">
-                                        <ChevronRight size={20} />
-                                    </button>
-                                </div>
-
-                                <div className="mt-6 flex gap-2">
-                                    <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full transition-all duration-1000 ${asgn.status === 'Completed' ? 'bg-green-400' : 'bg-apollo-indigo'}`}
-                                            style={{ width: `${(asgn.submitted / asgn.students) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                ))}
                     </div>
 
                     {/* AI Insights Sidebar */}
                     <div className="space-y-8">
+                        {/* ... Existing AI Insights ... */}
                         <div className="glass rounded-3xl p-8 border-yellow-500/10 bg-yellow-500/5 relative overflow-hidden">
                             {interventionTask ? (
                                 <div className="animate-in fade-in zoom-in duration-300">
@@ -159,26 +222,14 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                         </div>
 
                         <div className="glass rounded-3xl p-8 border-white/5">
-                            <h2 className="text-xl font-bold text-white mb-6">Mastery Guard</h2>
-                            <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between mb-4">
-                                <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Auto-Intervention</span>
-                                <button
-                                    onClick={() => setAutoIntervene(!autoIntervene)}
-                                    className={`w-12 h-6 rounded-full transition-all relative ${autoIntervene ? 'bg-apollo-indigo' : 'bg-gray-700'}`}
-                                >
-                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${autoIntervene ? 'left-7' : 'left-1'}`} />
-                                </button>
-                            </div>
-                            <p className="text-[10px] text-gray-500 leading-relaxed italic">
-                                Automatically publish remedial tasks for students falling below **65%** mastery in core subjects.
-                            </p>
-                        </div>
-
-                        <div className="glass rounded-3xl p-8 border-white/5">
                             <h2 className="text-xl font-bold text-white mb-6">Quick Tools</h2>
                             <div className="grid grid-cols-2 gap-4">
                                 {aiTools.map((tool, idx) => (
-                                    <div key={idx} className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-all cursor-pointer group text-center">
+                                    <div
+                                        key={idx}
+                                        onClick={() => navigate(tool.path)}
+                                        className="bg-white/5 border border-white/10 p-4 rounded-2xl hover:bg-white/10 transition-all cursor-pointer group text-center"
+                                    >
                                         <div className="flex justify-center mb-3 group-hover:scale-110 transition-transform">{tool.icon}</div>
                                         <div className="text-[10px] font-bold text-white uppercase tracking-wider">{tool.name}</div>
                                     </div>
@@ -188,7 +239,7 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                     </div>
                 </div>
 
-                {/* Create Modal (Mock) */}
+                {/* Create Modal */}
                 {isCreating && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
                         <div className="glass w-full max-w-lg rounded-[40px] border-white/10 p-10 animate-in zoom-in-95 duration-200">
@@ -198,11 +249,21 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                             <div className="space-y-6">
                                 <div>
                                     <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Assignment Title</label>
-                                    <input type="text" placeholder="e.g. Chemistry Basics" className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-apollo-indigo" />
+                                    <input
+                                        type="text"
+                                        value={newAsgn.title}
+                                        onChange={e => setNewAsgn({ ...newAsgn, title: e.target.value })}
+                                        placeholder="e.g. Chemistry Basics"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-apollo-indigo"
+                                    />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">Select AI Tool</label>
-                                    <select className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-apollo-indigo appearance-none">
+                                    <select
+                                        value={newAsgn.tool}
+                                        onChange={e => setNewAsgn({ ...newAsgn, tool: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 outline-none focus:ring-2 focus:ring-apollo-indigo appearance-none"
+                                    >
                                         <option>Math Solver</option>
                                         <option>Science Lab</option>
                                         <option>Worksheet Generator</option>
@@ -211,7 +272,7 @@ const AssignmentSuite: React.FC<{ embedMode?: boolean }> = ({ embedMode }) => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <button onClick={() => setIsCreating(false)} className="py-4 rounded-2xl border border-white/10 font-bold text-gray-400 hover:bg-white/5 transition-all">Cancel</button>
-                                    <button onClick={() => setIsCreating(false)} className="py-4 bg-apollo-indigo rounded-2xl font-bold text-white hover:bg-apollo-indigo/80 transition-all">Publish Mission</button>
+                                    <button onClick={handleCreate} className="py-4 bg-apollo-indigo rounded-2xl font-bold text-white hover:bg-apollo-indigo/80 transition-all">Publish Mission</button>
                                 </div>
                             </div>
                         </div>
