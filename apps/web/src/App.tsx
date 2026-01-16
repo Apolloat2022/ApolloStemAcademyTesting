@@ -15,7 +15,6 @@ import DeepAnalytics from './pages/DeepAnalytics';
 import AssignmentSuite from './pages/AssignmentSuite';
 import MessagingCenter from './pages/MessagingCenter';
 import AIToolsPublic from './pages/AIToolsPublic';
-import StudentTools from './pages/StudentTools';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Placeholder Client ID - User should replace with real one from Google Console
@@ -36,7 +35,6 @@ const App: React.FC = () => {
             <Route path="/student/hub" element={<ProtectedRoute allowedRoles={['student']}><LearningHub /></ProtectedRoute>} />
             <Route path="/student/assignments" element={<ProtectedRoute allowedRoles={['student']}><MyAssignments /></ProtectedRoute>} />
             <Route path="/student/progress" element={<ProtectedRoute allowedRoles={['student']}><MyProgress /></ProtectedRoute>} />
-            <Route path="/tools/:toolId" element={<ProtectedRoute allowedRoles={['student']}><StudentTools /></ProtectedRoute>} />
 
             <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><ClassRoster /></ProtectedRoute>} />

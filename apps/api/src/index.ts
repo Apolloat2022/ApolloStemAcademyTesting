@@ -160,42 +160,6 @@ app.get('/api/student/assignments', authMiddleware, roleMiddleware(['student']),
   return c.json(assignments);
 });
 
-app.get('/api/student/activity/weekly', authMiddleware, roleMiddleware(['student']), async (c) => {
-  const payload = c.get('jwtPayload') as any;
-
-  // Mock data for weekly activity
-  let totalHours = 12.5;
-
-  if (c.env.DB) {
-    try {
-      const result = await c.env.DB.prepare('SELECT COUNT(*) as count FROM progress_logs WHERE student_id = ? AND created_at > datetime("now", "-7 days")').bind(payload.id).first() as any;
-      if (result && result.count > 0) {
-        totalHours = Math.max(12.5, result.count * 0.5);
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  return c.json({
-    hours: totalHours,
-    trend: '+2.5 hrs',
-    isPositive: true
-  });
-});
-
-app.get('/api/student/progress', authMiddleware, roleMiddleware(['student']), async (c) => {
-  const payload = c.get('jwtPayload') as any;
-
-  return c.json({
-    streak: 5,
-    completedTopics: 12,
-    accuracyImprovement: '+15%',
-    masteryLevel: 'Gold',
-    masteryPoints: 850
-  });
-});
-
 app.post('/api/assignments/:assignmentId/submit', authMiddleware, async (c) => {
   const assignmentId = c.req.param('assignmentId')
   const { content } = await c.req.json()

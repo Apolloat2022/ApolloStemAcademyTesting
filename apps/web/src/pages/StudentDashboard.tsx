@@ -21,25 +21,15 @@ const StudentDashboard: React.FC = () => {
     const [newAchievement, setNewAchievement] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    const [progress, setProgress] = useState<any>(null);
-    const [activity, setActivity] = useState<any>(null);
-    const [assignmentsCount, setAssignmentsCount] = useState(0);
-
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // api client automatically handles token
-                const [rRes, aRes, pRes, actRes, asgnRes] = await Promise.all([
+                const [rRes, aRes] = await Promise.all([
                     api.get('/api/student/recommendations'),
-                    api.get('/api/student/achievements'),
-                    api.get('/api/student/progress'),
-                    api.get('/api/student/activity/weekly'),
-                    api.get('/api/student/assignments')
+                    api.get('/api/student/achievements')
                 ]);
                 setRecs(rRes.data);
-                setProgress(pRes.data);
-                setActivity(actRes.data);
-                setAssignmentsCount(asgnRes.data.length);
 
                 // Detection logic for "New Achievement" toast
                 const justEarned = aRes.data.find((a: any) => a.earned && !localStorage.getItem(`notified_${a.id}`));
@@ -92,7 +82,7 @@ const StudentDashboard: React.FC = () => {
                             <BookOpen size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{progress ? progress.completedTopics : '--'}</div>
+                            <div className="text-2xl font-bold text-white">12</div>
                             <div className="text-gray-400 text-sm">Lessons Completed</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
@@ -103,7 +93,7 @@ const StudentDashboard: React.FC = () => {
                             <ClipboardList size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{assignmentsCount}</div>
+                            <div className="text-2xl font-bold text-white">4</div>
                             <div className="text-gray-400 text-sm">Pending Assignments</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
@@ -114,8 +104,8 @@ const StudentDashboard: React.FC = () => {
                             <TrendingUp size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{activity ? activity.hours : '--'}h</div>
-                            <div className="text-gray-400 text-sm">Weekly Activity</div>
+                            <div className="text-2xl font-bold text-white">85%</div>
+                            <div className="text-gray-400 text-sm">Average Accuracy</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
                     </div>
@@ -173,10 +163,10 @@ const StudentDashboard: React.FC = () => {
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
-                                    { name: 'Math', path: '/tools/math-solver', desc: 'Solver' },
-                                    { name: 'Lab', path: '/tools/science-lab', desc: 'Sim' },
-                                    { name: 'Quiz', path: '/tools/concept-explorer', desc: 'Review' },
-                                    { name: 'Study', path: '/tools/worksheet-generator', desc: 'Gen' }
+                                    { name: 'Math', path: '/student/hub', desc: 'Solver' },
+                                    { name: 'Lab', path: '/student/hub', desc: 'Sim' },
+                                    { name: 'Quiz', path: '/student/hub', desc: 'Review' },
+                                    { name: 'Study', path: '/student/hub', desc: 'Gen' }
                                 ].map((tool, i) => (
                                     <button
                                         key={i}
@@ -193,17 +183,14 @@ const StudentDashboard: React.FC = () => {
                         <div className="glass rounded-[40px] p-8 border-yellow-400/10 bg-yellow-400/5">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="font-black text-white text-sm flex items-center gap-2">
-                                    <Award className="text-yellow-400" size={18} /> LEARNING ANALYTICS
+                                    <Award className="text-yellow-400" size={18} /> PROGRESS
                                 </h3>
-                                <div className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">{progress ? `RANK: ${progress.masteryLevel.toUpperCase()}` : 'LOADING...'}</div>
+                                <div className="text-[10px] font-black text-yellow-400 uppercase tracking-widest">RANK: GOLD</div>
                             </div>
                             <div className="h-4 bg-white/5 rounded-full overflow-hidden border border-white/5 p-1 mb-4">
                                 <div className="h-full bg-yellow-400 rounded-full w-[65%] shadow-[0_0_15px_rgba(250,204,21,0.4)]" />
                             </div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                                <span>{progress ? `${progress.streak} Day Streak` : '--'}</span>
-                                <span>{progress ? progress.accuracyImprovement : '--'} Improvement</span>
-                            </div>
+                            <p className="text-[10px] text-gray-500 font-bold text-center uppercase tracking-widest">35 missions to NEXT RANK</p>
                         </div>
                     </div>
                 </div>

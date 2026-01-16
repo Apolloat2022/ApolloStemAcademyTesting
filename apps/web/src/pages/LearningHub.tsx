@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Sparkles, BrainCircuit, Rocket, Target, Zap, ArrowRight, BookOpen, Calculator, Beaker, FileText, Bot } from 'lucide-react';
+import { Sparkles, BrainCircuit, Rocket, Target, Zap, ArrowRight, BookOpen, Calculator, Beaker } from 'lucide-react';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -113,17 +113,11 @@ const LearningHub: React.FC = () => {
                             </h3>
                             <div className="space-y-4">
                                 {[
-                                    { icon: <Calculator className="text-blue-400" />, name: 'STEM Math Solver', desc: 'Step-by-step logic engine', path: '/tools/math-solver' },
-                                    { icon: <Beaker className="text-green-400" />, name: 'Virtual Science Lab', desc: 'Experimental simulations', path: '/tools/science-lab' },
-                                    { icon: <BookOpen className="text-yellow-400" />, name: 'Concept Explorer', desc: 'AI-powered study guides', path: '/tools/concept-explorer' },
-                                    { icon: <FileText className="text-purple-400" />, name: 'Worksheet Generator', desc: 'Instant practice sheets', path: '/tools/worksheet-generator' },
-                                    { icon: <Bot className="text-pink-400" />, name: 'AI Learning Coach', desc: 'Strategy & Motivation', path: '/tools/ai-coach' }
+                                    { icon: <Calculator className="text-blue-400" />, name: 'STEM Math Solver', desc: 'Step-by-step logic engine' },
+                                    { icon: <Beaker className="text-green-400" />, name: 'Virtual Science Lab', desc: 'Experimental simulations' },
+                                    { icon: <BookOpen className="text-yellow-400" />, name: 'Concept Explorer', desc: 'AI-powered study guides' }
                                 ].map((tool, i) => (
-                                    <div
-                                        key={i}
-                                        onClick={() => navigate(tool.path)}
-                                        className="p-5 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all cursor-pointer group flex items-center gap-4"
-                                    >
+                                    <div key={i} className="p-5 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all cursor-pointer group flex items-center gap-4">
                                         <div className="p-3 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform">{tool.icon}</div>
                                         <div>
                                             <div className="font-bold text-white text-sm">{tool.name}</div>
