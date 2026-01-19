@@ -67,7 +67,7 @@ const AntigravityDashboard: React.FC = () => {
         setLoading(true);
         try {
             // Fetch personal tasks, class assignments, and classroom link
-            const [personalTasks, classAsgns, statusRes, leaderboardRes] = await Promise.all([
+            const [personalTasks, classAsgns, statusRes, leaderboardRes, squadsRes] = await Promise.all([
                 api.get('/api/student/tasks'),
                 api.get('/api/student/assignments'),
                 api.get('/api/auth/google/status'),
