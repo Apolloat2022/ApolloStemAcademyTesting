@@ -1,6 +1,6 @@
 import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { ClipboardList, Clock, CheckCircle2, Play, AlertCircle, Send } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle2, Play, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 
