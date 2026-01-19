@@ -9,7 +9,8 @@ import {
     Home,
     Settings,
     BrainCircuit,
-    Users
+    Users,
+    GraduationCap
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
@@ -32,6 +33,7 @@ const Sidebar: React.FC = () => {
 
     const teacherLinks = [
         { name: 'Overview', path: '/teacher/dashboard', icon: LayoutDashboard },
+        { name: 'AP Dashboard', path: '/ap-teacher', icon: GraduationCap },
         { name: 'Class Management', path: '/teacher/classes', icon: Users },
         { name: 'Assignment Suite', path: '/teacher/assignments', icon: BookOpen },
         { name: 'Analytics', path: '/teacher/progress', icon: LineChart },
@@ -47,7 +49,7 @@ const Sidebar: React.FC = () => {
             volunteerLinks;
 
     return (
-        <div className="w-64 min-h-screen bg-apollo-dark border-r border-white/10 flex flex-col p-6 z-20">
+        <div className="w-56 min-h-screen bg-apollo-dark border-r border-white/10 flex flex-col p-6 z-20">
             <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer" onClick={() => navigate('/')}>
                 <img src="/logo.png" alt="Apollo" className="w-10 h-10 rounded-full" />
                 <span className="font-bold text-xl tracking-tight">Apollo</span>

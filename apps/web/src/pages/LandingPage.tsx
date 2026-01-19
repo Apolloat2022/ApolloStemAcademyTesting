@@ -136,10 +136,11 @@ const LandingPage: React.FC = () => {
                             The Future of Education
                         </div>
                         <h2 className="text-5xl md:text-7xl font-extrabold leading-tight gradient-shift mb-6">
-                            Master STEM with AI
+                            Master STEM & AP Courses with AI
                         </h2>
                         <p className="text-lg md:text-xl text-gray-300 leading-relaxed mb-10">
-                            Personalized learning powered by advanced AI and guided by expert mentors. <br className="hidden md:block" /> Join the next generation of innovators.
+                            Expert-led tutoring for <span className="text-indigo-400 font-bold">AP Physics, Calculus, & Computer Science</span>. <br className="hidden md:block" />
+                            Personalized learning powered by advanced AI and guided by expert mentors.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <a href="#enroll" className="px-8 py-4 bg-yellow-400 text-black font-bold rounded-lg hover:scale-105 transition shadow-lg shadow-yellow-400/20">

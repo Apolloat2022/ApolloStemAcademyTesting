@@ -16,6 +16,7 @@ import AssignmentSuite from './pages/AssignmentSuite';
 import MessagingCenter from './pages/MessagingCenter';
 import AIToolsPublic from './pages/AIToolsPublic';
 import ProtectedRoute from './components/ProtectedRoute';
+import APTeachers from './pages/APTeachers';
 
 // Placeholder Client ID - User should replace with real one from Google Console
 const GOOGLE_CLIENT_ID = "361795521130-loudg1rmrqkpgqu9dljb7nvej8tqn5hj.apps.googleusercontent.com";
@@ -40,6 +41,7 @@ const App: React.FC = () => {
             <Route path="/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><ClassRoster /></ProtectedRoute>} />
             <Route path="/teacher/assignments" element={<ProtectedRoute allowedRoles={['teacher']}><AssignmentSuite /></ProtectedRoute>} />
             <Route path="/teacher/progress" element={<ProtectedRoute allowedRoles={['teacher']}><DeepAnalytics /></ProtectedRoute>} />
+            <Route path="/ap-teacher" element={<ProtectedRoute allowedRoles={['teacher']}><APTeachers /></ProtectedRoute>} />
 
             {/* Protected Volunteer Routes */}
             <Route path="/volunteer/dashboard" element={<ProtectedRoute allowedRoles={['volunteer']}><VolunteerDashboard /></ProtectedRoute>} />
