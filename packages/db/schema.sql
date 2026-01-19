@@ -5,6 +5,7 @@ CREATE TABLE users (
     name TEXT,
     role TEXT CHECK(role IN ('student', 'teacher', 'volunteer', 'parent')) NOT NULL,
     google_id TEXT UNIQUE,
+    google_classroom_link TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -119,6 +120,9 @@ CREATE TABLE student_tasks (
     id TEXT PRIMARY KEY,
     student_id TEXT NOT NULL,
     title TEXT NOT NULL,
+    subject TEXT,
+    due_date TEXT,
+    priority TEXT DEFAULT 'Med',
     is_completed BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES users(id)

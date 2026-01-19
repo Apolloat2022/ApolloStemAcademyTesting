@@ -137,14 +137,34 @@ app.get('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async
   return c.json([]);
 })
 
+app.get('/api/student/classroom-link', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  if (c.env.DB) {
+    const user = await c.env.DB.prepare('SELECT google_classroom_link FROM users WHERE id = ?').bind(payload.id).first() as any;
+    return c.json({ link: user?.google_classroom_link || '' });
+  }
+  return c.json({ link: '' });
+})
+
+app.post('/api/student/classroom-link', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const { link } = await c.req.json();
+  if (c.env.DB) {
+    await c.env.DB.prepare('UPDATE users SET google_classroom_link = ? WHERE id = ?').bind(link, payload.id).run();
+  }
+  return c.json({ success: true });
+})
+
 app.post('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async (c) => {
   const payload = c.get('jwtPayload') as any;
-  const { title } = await c.req.json();
+  const { title, subject, due_date, priority } = await c.req.json();
   const id = crypto.randomUUID();
   if (c.env.DB) {
-    await c.env.DB.prepare('INSERT INTO student_tasks (id, student_id, title) VALUES (?, ?, ?)').bind(id, payload.id, title).run();
+    await c.env.DB.prepare(
+      'INSERT INTO student_tasks (id, student_id, title, subject, due_date, priority) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(id, payload.id, title, subject || 'General', due_date || 'TBD', priority || 'Med').run();
   }
-  return c.json({ success: true, id, title, is_completed: 0 });
+  return c.json({ success: true, id, title, subject, due_date, priority, is_completed: 0 });
 })
 
 app.put('/api/student/tasks/:id', authMiddleware, roleMiddleware(['student']), async (c) => {
@@ -163,6 +183,26 @@ app.get('/api/reports/:studentId', authMiddleware, roleMiddleware(['teacher', 'v
   const apiKey = (c.env as any).GEMINI_API_KEY
   const report = await aiIntelligence.generateNarrativeReport(c.env.DB, studentId, apiKey)
   return c.json(report)
+})
+
+app.post('/api/ai/ap-strategy', authMiddleware, roleMiddleware(['teacher']), async (c) => {
+  const { subject, studentCount } = await c.req.json();
+  const apiKey = (c.env as any).GEMINI_API_KEY;
+
+  const prompt = `Develop a high-intensity AP Exam strategy for a class of ${studentCount} students in ${subject}. 
+  Focus on syllabus alignment, pacing for college credit, and AI-driven practice banks. 
+  Include exactly 3 actionable milestones.`;
+
+  let strategy = "Strategy: Focus on unit drills and mock exams. Pacing looks good for May test dates.";
+
+  if (apiKey) {
+    try {
+      const res = await geminiService.generate(apiKey, prompt, "You are an AP Education Coordinator.");
+      if (res) strategy = res;
+    } catch (e) { }
+  }
+
+  return c.json({ strategy });
 })
 
 app.get('/api/student/assignments', authMiddleware, roleMiddleware(['student']), async (c) => {
@@ -578,10 +618,15 @@ app.post('/api/ai/generate', async (c) => {
 
 app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async (c) => {
   const payload = c.get('jwtPayload') as any;
-  const { token } = await c.req.json().catch(() => ({ token: null })); // Optional token from frontend if passed
+  const { token, link } = await c.req.json().catch(() => ({ token: null, link: null }));
 
   if (c.env.DB) {
     try {
+      // If a link was provided during sync, save it
+      if (link) {
+        await c.env.DB.prepare('UPDATE users SET google_classroom_link = ? WHERE id = ?').bind(link, payload.id).run();
+      }
+
       // 1. Real Sync Path (if token provided)
       // In a real prod app, you'd exchange auth code for this token or retrieve from session
       if (token && token.startsWith('sq.')) { // Simple check for 'sq' prefix often used in Google Classroom scopes or just presence
@@ -611,6 +656,11 @@ app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async 
           section: 'US History'
         }
       ];
+
+      // Ensure student is enrolled in default_class
+      await c.env.DB.prepare(
+        'INSERT OR IGNORE INTO enrollments (student_id, class_id) VALUES (?, ?)'
+      ).bind(payload.id, mockClassId).run();
 
       for (const asgn of importedAssignments) {
         await c.env.DB.prepare(

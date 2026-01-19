@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import {
     BookOpen,
@@ -8,10 +8,16 @@ import {
     Clock,
     Award,
     BrainCircuit,
-    Sparkles
+    Sparkles,
+    Loader2,
+    X
 } from 'lucide-react';
+import { api } from '../services/api';
 
 const APTeachers: React.FC = () => {
+    const [generating, setGenerating] = useState(false);
+    const [strategy, setStrategy] = useState<string | null>(null);
+
     const stats = [
         { label: 'AP Physics C', students: 12, prep: '85%', color: 'text-blue-400' },
         { label: 'AP Calculus BC', students: 18, prep: '92%', color: 'text-indigo-400' },
@@ -23,6 +29,21 @@ const APTeachers: React.FC = () => {
         { title: 'Syllabus Alignment Review', date: 'Completed', status: 'Done' },
         { title: 'College Credit Documentation', date: 'Jan 25, 2026', status: 'Pending' },
     ];
+
+    const generateStrategy = async () => {
+        setGenerating(true);
+        try {
+            const res = await api.post('/api/ai/ap-strategy', {
+                subject: 'AP Physics C',
+                studentCount: 12
+            });
+            setStrategy(res.data.strategy);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setGenerating(false);
+        }
+    };
 
     return (
         <DashboardLayout>
@@ -80,9 +101,13 @@ const APTeachers: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                        <button className="w-full mt-4 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                            <Sparkles size={18} className="text-yellow-400" />
-                            Generate AI Exam Strategy
+                        <button
+                            disabled={generating}
+                            onClick={generateStrategy}
+                            className="w-full mt-4 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                        >
+                            {generating ? <Loader2 className="animate-spin text-apollo-indigo" /> : <Sparkles size={18} className="text-yellow-400" />}
+                            {generating ? 'AI Strategizing...' : 'Generate AI Exam Strategy'}
                         </button>
                     </div>
 
@@ -120,6 +145,42 @@ const APTeachers: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* AI Strategy Modal */}
+                {strategy && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="glass w-full max-w-2xl p-10 rounded-3xl border-indigo-500/20 shadow-3xl animate-in zoom-in-95 duration-300">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-3xl font-black text-white flex items-center gap-3">
+                                    <Sparkles className="text-yellow-400" />
+                                    AI Exam <span className="text-apollo-indigo">Strategy</span>
+                                </h2>
+                                <button onClick={() => setStrategy(null)} className="p-2 hover:bg-white/10 rounded-full text-gray-400 transition-colors">
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            <div className="prose prose-invert max-w-none">
+                                <p className="text-indigo-100/90 text-lg leading-relaxed whitespace-pre-wrap font-medium">
+                                    {strategy}
+                                </p>
+                            </div>
+                            <div className="mt-10 flex gap-4">
+                                <button
+                                    onClick={() => setStrategy(null)}
+                                    className="flex-1 py-4 bg-white/5 rounded-2xl font-bold text-white border border-white/10 hover:bg-white/10"
+                                >
+                                    Dismiss
+                                </button>
+                                <button
+                                    onClick={() => window.print()}
+                                    className="flex-1 py-4 bg-apollo-indigo rounded-2xl font-bold text-white shadow-lg shadow-apollo-indigo/20"
+                                >
+                                    Export Strategy (PDF)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

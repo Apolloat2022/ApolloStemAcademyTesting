@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import {
     Zap,
@@ -9,8 +9,10 @@ import {
     X,
     ClipboardList,
     MoreHorizontal,
-    ExternalLink
+    ExternalLink,
+    Loader2
 } from 'lucide-react';
+import { api } from '../services/api';
 
 interface Assignment {
     id: string;
@@ -19,10 +21,12 @@ interface Assignment {
     dueDate: string;
     priority: 'High' | 'Med' | 'Low';
     status: 'Pending' | 'In Progress' | 'Completed';
+    is_personal?: boolean;
 }
 
 const AntigravityDashboard: React.FC = () => {
     const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [loading, setLoading] = useState(true);
     const [classroomLink, setClassroomLink] = useState('');
     const [isEditingLink, setIsEditingLink] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
@@ -35,38 +39,106 @@ const AntigravityDashboard: React.FC = () => {
         status: 'Pending'
     });
 
-    const handleImport = () => {
-        const lines = importText.split('\n').filter(l => l.trim());
-        const imported: Assignment[] = lines.map(line => {
-            const parts = line.split('-').map(p => p.trim());
-            return {
-                id: Math.random().toString(36).substr(2, 9),
-                subject: parts.length > 1 ? parts[0] : 'General',
-                name: parts.length > 2 ? parts[1] : (parts.length > 1 ? parts[1] : parts[0]),
-                dueDate: parts.length > 2 ? parts[2] : 'TBD',
-                priority: 'Med',
-                status: 'Pending'
-            };
-        });
-        setAssignments([...assignments, ...imported]);
-        setImportText('');
-        setShowImportModal(false);
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // Fetch personal tasks, class assignments, and classroom link
+            const [personalTasks, classAsgns, linkRes] = await Promise.all([
+                api.get('/api/student/tasks'),
+                api.get('/api/student/assignments'),
+                api.get('/api/student/classroom-link')
+            ]);
+
+            const personalMapped: Assignment[] = personalTasks.data.map((t: any) => ({
+                id: t.id,
+                subject: t.subject || 'General',
+                name: t.title,
+                dueDate: t.due_date || 'TBD',
+                priority: t.priority || 'Med',
+                status: t.is_completed ? 'Completed' : 'Pending',
+                is_personal: true
+            }));
+
+            const classMapped: Assignment[] = classAsgns.data.map((a: any) => ({
+                id: a.id,
+                subject: a.subject || 'STEM',
+                name: a.title,
+                dueDate: a.due_date || 'TBD',
+                priority: 'High', // Default high for class assignments
+                status: a.status === 'submitted' ? 'Completed' : 'Pending'
+            }));
+
+            setAssignments([...classMapped, ...personalMapped]);
+            if (linkRes.data.link) setClassroomLink(linkRes.data.link);
+        } catch (error) {
+            console.error('Failed to fetch dashboard data', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleManualAdd = (e: React.FormEvent) => {
+    const handleSaveLink = async () => {
+        setIsEditingLink(false);
+        if (!classroomLink) return;
+
+        try {
+            setLoading(true);
+            // Save link AND trigger sync
+            await api.post('/api/google/sync', { link: classroomLink });
+            await fetchData();
+        } catch (error) {
+            console.error('Failed to sync classroom', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleImport = async () => {
+        const lines = importText.split('\n').filter(l => l.trim());
+        const imported = lines.map(line => {
+            const parts = line.split('-').map(p => p.trim());
+            return {
+                title: parts.length > 2 ? parts[1] : (parts.length > 1 ? parts[1] : parts[0]),
+                subject: parts.length > 1 ? parts[0] : 'General',
+                due_date: parts.length > 2 ? parts[2] : 'TBD',
+                priority: 'Med'
+            };
+        });
+
+        try {
+            // Persist each to the backend
+            await Promise.all(imported.map(asgn =>
+                api.post('/api/student/tasks', asgn)
+            ));
+            await fetchData();
+            setImportText('');
+            setShowImportModal(false);
+        } catch (error) {
+            alert('Failed to import assignments. Please try again.');
+        }
+    };
+
+    const handleManualAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newAsgn.name) return;
-        const asgn: Assignment = {
-            id: Math.random().toString(36).substr(2, 9),
-            subject: newAsgn.subject || 'General',
-            name: newAsgn.name,
-            dueDate: newAsgn.dueDate || 'TBD',
-            priority: (newAsgn.priority as any) || 'Med',
-            status: (newAsgn.status as any) || 'Pending',
-        };
-        setAssignments([...assignments, asgn]);
-        setNewAsgn({ priority: 'Med', status: 'Pending' });
-        setShowAddModal(false);
+
+        try {
+            await api.post('/api/student/tasks', {
+                title: newAsgn.name,
+                subject: newAsgn.subject,
+                due_date: newAsgn.dueDate,
+                priority: newAsgn.priority
+            });
+            await fetchData();
+            setNewAsgn({ priority: 'Med', status: 'Pending' });
+            setShowAddModal(false);
+        } catch (error) {
+            alert('Failed to add assignment. Please try again.');
+        }
     };
 
     const contactTeacher = () => {
@@ -97,10 +169,11 @@ const AntigravityDashboard: React.FC = () => {
                                             placeholder="Paste Google Classroom Link..."
                                             value={classroomLink}
                                             onChange={(e) => setClassroomLink(e.target.value)}
-                                            onBlur={() => setIsEditingLink(false)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleSaveLink()}
+                                            onBlur={handleSaveLink}
                                             className="bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500 w-64"
                                         />
-                                        <button onClick={() => setIsEditingLink(false)} className="text-xs text-indigo-400 font-bold">Save</button>
+                                        <button onClick={handleSaveLink} className="text-xs text-indigo-400 font-bold">Save</button>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-4">
@@ -156,14 +229,26 @@ const AntigravityDashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {assignments.length > 0 ? assignments.map((asgn) => (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
+                                                <p className="text-gray-400 font-medium">Syncing your learning data...</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : assignments.length > 0 ? assignments.map((asgn) => (
                                     <tr key={asgn.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-5">
-                                            <span className="px-3 py-1 bg-indigo-600/10 text-indigo-400 rounded-lg text-xs font-bold border border-indigo-600/20">
+                                            <span className={`px-3 py-1 bg-indigo-600/10 text-indigo-400 rounded-lg text-xs font-bold border border-indigo-600/20 ${asgn.is_personal ? 'border-dashed' : ''}`}>
                                                 {asgn.subject}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 font-bold text-white">{asgn.name}</td>
+                                        <td className="px-6 py-5 font-bold text-white">
+                                            {asgn.name}
+                                            {asgn.is_personal && <span className="ml-2 text-[10px] text-gray-500 uppercase tracking-widest">Personal</span>}
+                                        </td>
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-2 text-gray-400 text-sm">
                                                 <Clock size={14} />
@@ -172,8 +257,8 @@ const AntigravityDashboard: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${asgn.priority === 'High' ? 'bg-red-500/10 text-red-500' :
-                                                    asgn.priority === 'Med' ? 'bg-yellow-500/10 text-yellow-500' :
-                                                        'bg-blue-500/10 text-blue-500'
+                                                asgn.priority === 'Med' ? 'bg-yellow-500/10 text-yellow-500' :
+                                                    'bg-blue-500/10 text-blue-500'
                                                 }`}>
                                                 {asgn.priority}
                                             </span>
