@@ -9,6 +9,7 @@ import {
     Home,
     Settings,
     BrainCircuit,
+    Zap,
     Users,
     GraduationCap
 } from 'lucide-react';
@@ -26,6 +27,7 @@ const Sidebar: React.FC = () => {
 
     const studentLinks = [
         { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
+        { name: 'Antigravity AI', path: '/student/antigravity', icon: Zap },
         { name: 'Learning Hub', path: '/student/hub', icon: BrainCircuit },
         { name: 'My Assignments', path: '/student/assignments', icon: ClipboardList },
         { name: 'My Progress', path: '/student/progress', icon: LineChart },

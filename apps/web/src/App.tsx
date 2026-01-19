@@ -17,6 +17,7 @@ import MessagingCenter from './pages/MessagingCenter';
 import AIToolsPublic from './pages/AIToolsPublic';
 import ProtectedRoute from './components/ProtectedRoute';
 import APTeachers from './pages/APTeachers';
+import AntigravityDashboard from './pages/AntigravityDashboard';
 
 // Placeholder Client ID - User should replace with real one from Google Console
 const GOOGLE_CLIENT_ID = "361795521130-loudg1rmrqkpgqu9dljb7nvej8tqn5hj.apps.googleusercontent.com";
@@ -36,6 +37,7 @@ const App: React.FC = () => {
             <Route path="/student/hub" element={<ProtectedRoute allowedRoles={['student']}><LearningHub /></ProtectedRoute>} />
             <Route path="/student/assignments" element={<ProtectedRoute allowedRoles={['student']}><MyAssignments /></ProtectedRoute>} />
             <Route path="/student/progress" element={<ProtectedRoute allowedRoles={['student']}><MyProgress /></ProtectedRoute>} />
+            <Route path="/student/antigravity" element={<ProtectedRoute allowedRoles={['student']}><AntigravityDashboard /></ProtectedRoute>} />
 
             <Route path="/teacher/dashboard" element={<ProtectedRoute allowedRoles={['teacher']}><TeacherDashboard /></ProtectedRoute>} />
             <Route path="/teacher/classes" element={<ProtectedRoute allowedRoles={['teacher']}><ClassRoster /></ProtectedRoute>} />
