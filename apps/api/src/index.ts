@@ -98,8 +98,62 @@ app.post('/auth/google', async (c) => {
 })
 
 // Protected Routes Example
-app.get('/student/dashboard', authMiddleware, roleMiddleware(['student']), (c) => {
-  return c.json({ message: 'Welcome to the Student Dashboard' })
+app.get('/api/student/dashboard-stats', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const stats = { lessons: 0, assignments: 0, accuracy: 0 };
+
+  if (c.env.DB) {
+    try {
+      // Mock lesson count logic (e.g., specific progress logs)
+      const lessonCount = await c.env.DB.prepare('SELECT COUNT(*) as c FROM progress_logs WHERE student_id = ?').bind(payload.id).first() as any;
+      stats.lessons = lessonCount.c;
+
+      // Pending assignments
+      const pending = await c.env.DB.prepare(`
+        SELECT COUNT(*) as c 
+        FROM assignments a 
+        JOIN enrollments e ON a.class_id = e.class_id 
+        LEFT JOIN submissions s ON s.assignment_id = a.id AND s.student_id = ?
+        WHERE e.student_id = ? AND (s.status IS NULL OR s.status = 'pending')
+      `).bind(payload.id, payload.id).first() as any;
+      stats.assignments = pending.c;
+
+      // Accuracy (average performance score)
+      const accuracy = await c.env.DB.prepare('SELECT AVG(performance_score) as avg FROM progress_logs WHERE student_id = ? AND performance_score IS NOT NULL').bind(payload.id).first() as any;
+      stats.accuracy = accuracy.avg ? Math.round(accuracy.avg) : 0;
+    } catch (e) {
+      console.error('Student stats fetch failed', e);
+    }
+  }
+  return c.json(stats);
+})
+
+app.get('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  if (c.env.DB) {
+    const { results } = await c.env.DB.prepare('SELECT * FROM student_tasks WHERE student_id = ? ORDER BY created_at DESC').bind(payload.id).all();
+    return c.json(results);
+  }
+  return c.json([]);
+})
+
+app.post('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const { title } = await c.req.json();
+  const id = crypto.randomUUID();
+  if (c.env.DB) {
+    await c.env.DB.prepare('INSERT INTO student_tasks (id, student_id, title) VALUES (?, ?, ?)').bind(id, payload.id, title).run();
+  }
+  return c.json({ success: true, id, title, is_completed: 0 });
+})
+
+app.put('/api/student/tasks/:id', authMiddleware, roleMiddleware(['student']), async (c) => {
+  const id = c.req.param('id');
+  const { is_completed } = await c.req.json();
+  if (c.env.DB) {
+    await c.env.DB.prepare('UPDATE student_tasks SET is_completed = ? WHERE id = ?').bind(is_completed ? 1 : 0, id).run();
+  }
+  return c.json({ success: true });
 })
 
 // AI Intelligence Routes

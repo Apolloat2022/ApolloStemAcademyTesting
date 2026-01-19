@@ -114,6 +114,16 @@ CREATE TABLE student_mastery (
     FOREIGN KEY (student_id) REFERENCES users(id)
 );
 
+-- Student Personal Tasks
+CREATE TABLE student_tasks (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    is_completed BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id)
+);
+
 -- SEED DATA
 INSERT OR IGNORE INTO users (id, email, name, role) VALUES ('default_teacher', 'teacher@apollo.edu', 'Ms. Frizzle', 'teacher');
 INSERT OR IGNORE INTO classes (id, name, teacher_id) VALUES ('default_class', 'General STEM', 'default_teacher');

@@ -20,16 +20,25 @@ const StudentDashboard: React.FC = () => {
     const [recs, setRecs] = useState<string[]>([]);
     const [newAchievement, setNewAchievement] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ lessons: 0, assignments: 0, accuracy: 0 });
+    const [tasks, setTasks] = useState<any[]>([]);
+    const [newTask, setNewTask] = useState('');
+    const [showTaskInput, setShowTaskInput] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // api client automatically handles token
-                const [rRes, aRes] = await Promise.all([
+                const [rRes, aRes, sRes, tRes] = await Promise.all([
                     api.get('/api/student/recommendations'),
-                    api.get('/api/student/achievements')
+                    api.get('/api/student/achievements'),
+                    api.get('/api/student/dashboard-stats'),
+                    api.get('/api/student/tasks')
                 ]);
                 setRecs(rRes.data);
+                setStats(sRes.data);
+                setTasks(tRes.data);
 
                 // Detection logic for "New Achievement" toast
                 const justEarned = aRes.data.find((a: any) => a.earned && !localStorage.getItem(`notified_${a.id}`));
@@ -48,6 +57,31 @@ const StudentDashboard: React.FC = () => {
         fetchData();
     }, []);
 
+    const handleAddTask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTask.trim()) return;
+        try {
+            const res = await api.post('/api/student/tasks', { title: newTask });
+            setTasks([res.data, ...tasks]);
+            setNewTask('');
+            setShowTaskInput(false);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const toggleTask = async (id: string, currentStatus: boolean) => {
+        // Optimistic update
+        setTasks(tasks.map(t => t.id === id ? { ...t, is_completed: !currentStatus } : t));
+        try {
+            await api.put(`/api/student/tasks/${id}`, { is_completed: !currentStatus });
+        } catch (e) {
+            console.error(e);
+            // Revert on fail
+            setTasks(tasks.map(t => t.id === id ? { ...t, is_completed: currentStatus } : t));
+        }
+    };
+
     if (loading) {
         return (
             <DashboardLayout>
@@ -61,18 +95,36 @@ const StudentDashboard: React.FC = () => {
     return (
         <DashboardLayout>
             <div className="p-8">
-                <header className="mb-10 flex justify-between items-start">
+                <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-black text-white mb-2">Welcome back, {user?.name.split(' ')[0]}! 👋</h1>
                         <p className="text-gray-400">Your STEM journey is evolving. View your missions below.</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/student/hub')}
-                        className="bg-apollo-indigo px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-apollo-indigo/20 text-white"
-                    >
-                        <Sparkles size={18} />
-                        Launch AI Hub
-                    </button>
+                    <div className="flex gap-4 items-center">
+                        <button
+                            onClick={async () => {
+                                setIsSyncing(true);
+                                try {
+                                    await api.post('/api/google/sync');
+                                    alert('Google Classroom Linked!');
+                                } catch (e) {
+                                    alert('Sync failed');
+                                }
+                                setIsSyncing(false);
+                            }}
+                            className="bg-white/5 border border-white/10 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-white/10 transition-all text-sm"
+                        >
+                            <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
+                            {isSyncing ? 'Syncing...' : 'Connect Google Classroom'}
+                        </button>
+                        <button
+                            onClick={() => navigate('/student/hub')}
+                            className="bg-apollo-indigo px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-apollo-indigo/20 text-white"
+                        >
+                            <Sparkles size={18} />
+                            Launch AI Hub
+                        </button>
+                    </div>
                 </header>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -82,7 +134,7 @@ const StudentDashboard: React.FC = () => {
                             <BookOpen size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">12</div>
+                            <div className="text-2xl font-bold text-white">{stats.lessons}</div>
                             <div className="text-gray-400 text-sm">Lessons Completed</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
@@ -93,7 +145,7 @@ const StudentDashboard: React.FC = () => {
                             <ClipboardList size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">4</div>
+                            <div className="text-2xl font-bold text-white">{stats.assignments}</div>
                             <div className="text-gray-400 text-sm">Pending Assignments</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
@@ -104,7 +156,7 @@ const StudentDashboard: React.FC = () => {
                             <TrendingUp size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">85%</div>
+                            <div className="text-2xl font-bold text-white">{stats.accuracy}%</div>
                             <div className="text-gray-400 text-sm">Average Accuracy</div>
                         </div>
                         <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
@@ -154,29 +206,54 @@ const StudentDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Quick Launch & Achievements Hub */}
+                    {/* Personal Tasks & Quick Launch */}
                     <div className="flex flex-col gap-8">
                         <div className="glass rounded-[40px] p-8 bg-apollo-indigo/5 border-apollo-indigo/10 flex-1">
-                            <h2 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
-                                <Sparkles className="text-apollo-indigo" size={20} />
-                                Tool Hub
-                            </h2>
-                            <div className="grid grid-cols-2 gap-4">
-                                {[
-                                    { name: 'Math', path: '/student/hub', desc: 'Solver' },
-                                    { name: 'Lab', path: '/student/hub', desc: 'Sim' },
-                                    { name: 'Quiz', path: '/student/hub', desc: 'Review' },
-                                    { name: 'Study', path: '/student/hub', desc: 'Gen' }
-                                ].map((tool, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => navigate(tool.path)}
-                                        className="p-5 bg-white/5 rounded-3xl border border-white/5 hover:bg-white/10 transition-all text-center group"
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <ClipboardList className="text-apollo-indigo" size={20} />
+                                    Personal Goals
+                                </h2>
+                                <button
+                                    onClick={() => setShowTaskInput(!showTaskInput)}
+                                    className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all text-white"
+                                >
+                                    {showTaskInput ? <X size={16} /> : <span className="text-xl leading-none mb-1">+</span>}
+                                </button>
+                            </div>
+
+                            {showTaskInput && (
+                                <form onSubmit={handleAddTask} className="mb-4 animate-in fade-in slide-in-from-top-2">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        value={newTask}
+                                        onChange={(e) => setNewTask(e.target.value)}
+                                        placeholder="Add a new goal..."
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-apollo-indigo/50 text-sm"
+                                    />
+                                </form>
+                            )}
+
+                            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                {tasks.length > 0 ? tasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        onClick={() => toggleTask(task.id, Boolean(task.is_completed))}
+                                        className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 group ${task.is_completed ? 'bg-green-500/5 border-green-500/10' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
                                     >
-                                        <div className="text-sm font-bold text-white mb-1 group-hover:text-apollo-indigo transition-colors">{tool.name}</div>
-                                        <div className="text-[8px] text-gray-600 font-black uppercase tracking-tighter">{tool.desc}</div>
-                                    </button>
-                                ))}
+                                        <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-colors ${task.is_completed ? 'bg-green-500 border-green-500' : 'border-gray-500 group-hover:border-white'}`}>
+                                            {task.is_completed && <X size={12} className="text-black rotate-45" strokeWidth={4} />}
+                                        </div>
+                                        <span className={`text-sm font-bold transition-colors ${task.is_completed ? 'text-gray-500 line-through decoration-2 decoration-green-500/50' : 'text-gray-200'}`}>
+                                            {task.title}
+                                        </span>
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-8 text-gray-500 text-sm italic">
+                                        No personal goals yet. Add one to stay focused!
+                                    </div>
+                                )}
                             </div>
                         </div>
 
