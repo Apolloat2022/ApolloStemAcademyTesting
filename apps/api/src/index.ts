@@ -370,6 +370,59 @@ app.post('/api/google/connect', authMiddleware, roleMiddleware(['student']), asy
   }
 });
 
+app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+
+    // In a real app, we would fetch from Google Classroom API here.
+    // For this context, we will simulate importing 2 new missions from Google.
+
+    const user = await c.env.DB.prepare('SELECT google_classroom_link FROM users WHERE id = ?').bind(userId).first() as any;
+    if (!user?.google_classroom_link) {
+      return c.json({ error: 'No classroom linked' }, 400);
+    }
+
+    const assignments = [
+      { id: crypto.randomUUID(), title: 'Rocket Propulsion Lab', description: 'Analyze Newton\'s Third Law with water rockets.', subject: 'Physics', due_date: 'Jan 28, 2026' },
+      { id: crypto.randomUUID(), title: 'Genetic Mutations Seminar', description: 'Explore CRISPR and the future of bio-engineering.', subject: 'Biology', due_date: 'Feb 5, 2026' }
+    ];
+
+    for (const a of assignments) {
+      // Find a default class for the student if class_id is needed, or use a placeholder
+      await c.env.DB.prepare(`
+        INSERT OR IGNORE INTO assignments (id, class_id, title, description, due_date)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(a.id, 'default_class', a.title, a.description, a.due_date).run();
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users SET last_sync_at = datetime('now') WHERE id = ?
+    `).bind(userId).run();
+
+    return c.json({ success: true, imported: assignments.length });
+  } catch (error) {
+    console.error('Error syncing Google Classroom:', error);
+    return c.json({ error: 'Failed to sync' }, 500);
+  }
+});
+
+app.post('/api/google/disconnect', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+
+    await c.env.DB.prepare(`
+      UPDATE users SET google_classroom_link = NULL, last_sync_at = NULL WHERE id = ?
+    `).bind(userId).run();
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error disconnecting Google Classroom:', error);
+    return c.json({ error: 'Failed to disconnect' }, 500);
+  }
+});
+
 // --- AI Mission Generation API ---
 app.post('/api/ai/missions', authMiddleware, roleMiddleware(['student']), async (c) => {
   try {
