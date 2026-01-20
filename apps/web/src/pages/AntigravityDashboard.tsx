@@ -16,7 +16,8 @@ import {
     MessageSquare,
     BrainCircuit,
     Trophy,
-    TrendingUp
+    TrendingUp,
+    BookOpen
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -46,12 +47,14 @@ const AntigravityDashboard: React.FC = () => {
     const [quickTaskText, setQuickTaskText] = useState('');
     const [isParsing, setIsParsing] = useState(false);
     const [isSendingMessage, setIsSendingMessage] = useState(false);
-    const [isGoogleConnected, setIsGoogleConnected] = useState(false);
     const [filter, setFilter] = useState<'all' | 'pending' | 'completed' | 'teacher_assigned'>('all');
     const [studyGuide, setStudyGuide] = useState<string | null>(null);
     const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
     const [leaderboard, setLeaderboard] = useState<any[]>([]);
     const [squads, setSquads] = useState<Record<string, string[]>>({});
+    const [classroomLink, setClassroomLink] = useState('');
+    const [isConnected, setIsConnected] = useState(false);
+    const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
 
     // Manual Add Form State
     const [newAsgn, setNewAsgn] = useState<Partial<Assignment>>({
@@ -61,7 +64,20 @@ const AntigravityDashboard: React.FC = () => {
 
     useEffect(() => {
         fetchData();
+        checkConnectionStatus();
     }, []);
+
+    const checkConnectionStatus = async () => {
+        try {
+            const response = await api.get('/api/student/classroom-link');
+            if (response.data) {
+                setClassroomLink(response.data.link || '');
+                setIsConnected(!!response.data.link);
+            }
+        } catch (error) {
+            console.error('Failed to fetch connection status:', error);
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -98,7 +114,7 @@ const AntigravityDashboard: React.FC = () => {
             }));
 
             setAssignments([...classMapped, ...personalMapped]);
-            setIsGoogleConnected(statusRes.data.isConnected);
+            setIsConnected(statusRes.data.isConnected);
             setLeaderboard(leaderboardRes.data);
             setSquads(squadsRes.data);
         } catch (error) {
@@ -108,28 +124,28 @@ const AntigravityDashboard: React.FC = () => {
         }
     };
 
-    const handleConnectGoogle = async () => {
+    const handleSync = async () => {
+        setSyncStatus('syncing');
         try {
-            const redirectUri = window.location.origin + '/google-callback';
-            const res = await api.get(`/api/auth/google/url?redirectUri=${encodeURIComponent(redirectUri)}`);
-            window.location.href = res.data.url;
-        } catch (err) {
-            console.error('Failed to get auth URL', err);
-            alert('Could not initiate Google connection. Please check your network.');
-        }
-    };
+            const response = await api.post('/api/google/sync', { link: classroomLink });
 
-    const handleClassroomSync = async () => {
-        try {
-            setLoading(true);
-            await api.post('/api/google/sync');
-            await fetchData();
-            alert('Classroom Synchronized!');
+            if (response.data.success) {
+                setSyncStatus('success');
+                setIsConnected(true);
+                alert(`Successfully synced ${response.data.imported || 0} assignments from Google Classroom!`);
+                fetchData();
+                const linkRes = await api.get('/api/student/classroom-link');
+                if (linkRes.data) {
+                    setClassroomLink(linkRes.data.link || '');
+                }
+            } else {
+                setSyncStatus('error');
+                alert('Failed to sync with Google Classroom');
+            }
         } catch (error) {
-            console.error('Sync failed', error);
-            alert('Sync failed. Please ensure you have connected your Google Account.');
-        } finally {
-            setLoading(false);
+            setSyncStatus('error');
+            console.error('Sync error:', error);
+            alert('Sync failed. Please check your connection.');
         }
     };
 
@@ -299,14 +315,12 @@ const AntigravityDashboard: React.FC = () => {
                             <div className="flex flex-col gap-3 mt-4">
                                 <div className="flex items-center gap-4">
                                     <div
-                                        onClick={isGoogleConnected ? handleClassroomSync : handleConnectGoogle}
-                                        className={`flex items-center gap-2 px-4 py-1.5 border rounded-full cursor-pointer transition-all ${isGoogleConnected ? 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20' : 'bg-indigo-600/10 border-indigo-600/20 hover:bg-indigo-600/20'}`}
+                                        className={`flex items-center gap-2 px-4 py-1.5 border rounded-full transition-all ${isConnected ? 'bg-green-500/10 border-green-500/20' : 'bg-indigo-600/10 border-indigo-600/20'}`}
                                     >
-                                        <div className={`w-2 h-2 rounded-full ${isGoogleConnected ? 'bg-green-500 animate-pulse' : 'bg-indigo-400'}`} />
-                                        <span className={`text-xs font-black uppercase tracking-widest leading-none ${isGoogleConnected ? 'text-green-400' : 'text-indigo-400'}`}>
-                                            {isGoogleConnected ? 'Sync Classroom' : 'Connect Classroom'}
+                                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
+                                        <span className={`text-xs font-black uppercase tracking-widest leading-none ${isConnected ? 'text-green-400' : 'text-gray-400'}`}>
+                                            {isConnected ? 'Classroom Linked' : 'No Class Linked'}
                                         </span>
-                                        <RefreshCw size={12} className={`${loading && isGoogleConnected ? 'animate-spin' : ''} ${isGoogleConnected ? 'text-green-400/50' : 'text-indigo-400/50'}`} />
                                     </div>
                                     <button
                                         onClick={contactTeacher}
@@ -320,13 +334,6 @@ const AntigravityDashboard: React.FC = () => {
                         </div>
 
                         <div className="flex gap-4">
-                            <button
-                                onClick={() => setShowImportModal(true)}
-                                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/10 transition-all group"
-                            >
-                                <Download size={20} className="text-indigo-400 group-hover:scale-110 transition-transform" />
-                                Import from Classroom
-                            </button>
                             <button
                                 onClick={() => setShowAddModal(true)}
                                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 group"
@@ -477,8 +484,94 @@ const AntigravityDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Leaderboard Sidebar */}
+                    {/* Sidebar Column */}
                     <div className="space-y-6">
+                        {/* Google Classroom Integration Card */}
+                        <div className="glass rounded-[40px] p-8 border-white/5 bg-indigo-500/5 transition-all">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                    <BookOpen className="w-4 h-4 text-indigo-400" />
+                                    Google Classroom
+                                </h2>
+
+                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
+                                    {isConnected ? 'Connected' : 'Not Linked'}
+                                </div>
+                            </div>
+
+                            {isConnected ? (
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
+                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Attached Class</p>
+                                        <p className="truncate text-sm font-bold text-white">{classroomLink}</p>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleSync}
+                                            disabled={syncStatus === 'syncing'}
+                                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-indigo-500 disabled:opacity-50 transition-all shadow-lg shadow-indigo-600/20"
+                                        >
+                                            {syncStatus === 'syncing' ? (
+                                                <>
+                                                    <RefreshCw className="w-3 h-3 animate-spin" />
+                                                    Syncing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <RefreshCw className="w-3 h-3" />
+                                                    Sync Now
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={async () => {
+                                                await api.post('/api/google/disconnect');
+                                                setClassroomLink('');
+                                                setIsConnected(false);
+                                                fetchData();
+                                            }}
+                                            className="px-4 py-3 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
+                                        >
+                                            Unlink
+                                        </button>
+                                    </div>
+
+                                    {syncStatus === 'success' && (
+                                        <p className="text-[10px] text-green-400 font-bold text-center animate-in fade-in slide-in-from-top-2">✓ Missions updated from Classroom</p>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <p className="text-xs text-gray-500 leading-relaxed">Connect your STEM missions to automatically sync assignments.</p>
+
+                                    <div className="space-y-3">
+                                        <input
+                                            type="text"
+                                            value={classroomLink}
+                                            onChange={(e) => setClassroomLink(e.target.value)}
+                                            placeholder="Paste class link or code"
+                                            className="w-full p-4 bg-black/40 rounded-2xl border border-white/10 text-white text-sm focus:border-indigo-500/50 focus:outline-none transition-all"
+                                        />
+
+                                        <button
+                                            onClick={async () => {
+                                                if (!classroomLink.trim()) return;
+                                                await api.post('/api/google/connect', { link: classroomLink });
+                                                setIsConnected(true);
+                                                handleSync();
+                                            }}
+                                            className="w-full py-4 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
+                                        >
+                                            Connect Academy
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Academy Rankings */}
                         <div className="glass rounded-[40px] p-8 border-white/5 bg-indigo-500/5">
                             <div className="flex items-center gap-3 mb-6">
                                 <Trophy className="text-yellow-400" />
@@ -504,11 +597,9 @@ const AntigravityDashboard: React.FC = () => {
                                     <div className="py-10 text-center text-gray-500 italic text-xs">Recalculating global rankings...</div>
                                 )}
                             </div>
-                            <button className="w-full mt-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 transition-colors">
-                                View Hall of Fame
-                            </button>
                         </div>
 
+                        {/* Mission Streak */}
                         <div className="p-8 bg-purple-500/5 rounded-[40px] border border-purple-500/20">
                             <h3 className="text-xs font-black text-purple-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Sparkles size={14} /> Mission Streak

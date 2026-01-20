@@ -913,7 +913,53 @@ app.post('/api/ai/generate', async (c) => {
 });
 
 
-// --- Google Classroom Integration (Phase 4) ---
+// --- Google Classroom Integration (Phase 4/5) ---
+
+// Check connection status
+app.get('/api/student/classroom-link', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+  
+  if (!c.env.DB) return c.json({ link: '', connected: false });
+
+  const result = await c.env.DB.prepare(
+    'SELECT google_classroom_link FROM users WHERE id = ?'
+  ).bind(userId).first() as any;
+  
+  return c.json({ 
+    link: result?.google_classroom_link || '',
+    connected: !!result?.google_classroom_link 
+  });
+});
+
+// Connect (save link)
+app.post('/api/google/connect', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+  const { link } = await c.req.json();
+  
+  if (c.env.DB) {
+    await c.env.DB.prepare(
+      'UPDATE users SET google_classroom_link = ? WHERE id = ?'
+    ).bind(link, userId).run();
+  }
+  
+  return c.json({ success: true });
+});
+
+// Disconnect
+app.post('/api/google/disconnect', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+  
+  if (c.env.DB) {
+    await c.env.DB.prepare(
+      'UPDATE users SET google_classroom_link = NULL WHERE id = ?'
+    ).bind(userId).run();
+  }
+  
+  return c.json({ success: true });
+});
 
 app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async (c) => {
   const payload = c.get('jwtPayload') as any;
