@@ -54,6 +54,12 @@ const AntigravityDashboard: React.FC = () => {
     const [squads, setSquads] = useState<Record<string, string[]>>({});
     const [classroomLink, setClassroomLink] = useState('');
     const [isConnected, setIsConnected] = useState(false);
+    const [googleStatus, setGoogleStatus] = useState({
+        connected: false,
+        link: '',
+        lastSync: null,
+        assignmentCount: 0
+    });
     const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
 
     // Manual Add Form State
@@ -69,10 +75,11 @@ const AntigravityDashboard: React.FC = () => {
 
     const checkConnectionStatus = async () => {
         try {
-            const response = await api.get('/api/student/classroom-link');
+            const response = await api.get('/api/google/status');
             if (response.data) {
+                setGoogleStatus(response.data);
+                setIsConnected(response.data.connected);
                 setClassroomLink(response.data.link || '');
-                setIsConnected(!!response.data.link);
             }
         } catch (error) {
             console.error('Failed to fetch connection status:', error);
@@ -86,7 +93,7 @@ const AntigravityDashboard: React.FC = () => {
             const [personalTasks, classAsgns, statusRes, leaderboardRes, squadsRes] = await Promise.all([
                 api.get('/api/student/tasks'),
                 api.get('/api/student/assignments'),
-                api.get('/api/auth/google/status'),
+                api.get('/api/google/status'),
                 api.get('/api/student/leaderboard'),
                 api.get('/api/student/squads')
             ]);
@@ -127,17 +134,13 @@ const AntigravityDashboard: React.FC = () => {
     const handleSync = async () => {
         setSyncStatus('syncing');
         try {
-            const response = await api.post('/api/google/sync', { link: classroomLink });
+            const response = await api.post('/api/google/sync');
 
             if (response.data.success) {
                 setSyncStatus('success');
-                setIsConnected(true);
-                alert(`Successfully synced ${response.data.imported || 0} assignments from Google Classroom!`);
+                alert(`Sync Complete! Imported ${response.data.imported || 0} assignments.`);
                 fetchData();
-                const linkRes = await api.get('/api/student/classroom-link');
-                if (linkRes.data) {
-                    setClassroomLink(linkRes.data.link || '');
-                }
+                checkConnectionStatus();
             } else {
                 setSyncStatus('error');
                 alert('Failed to sync with Google Classroom');
@@ -145,7 +148,7 @@ const AntigravityDashboard: React.FC = () => {
         } catch (error) {
             setSyncStatus('error');
             console.error('Sync error:', error);
-            alert('Sync failed. Please check your connection.');
+            alert('Sync failed. Please try again.');
         }
     };
 
@@ -494,16 +497,25 @@ const AntigravityDashboard: React.FC = () => {
                                     Google Classroom
                                 </h2>
 
-                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isConnected ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
-                                    {isConnected ? 'Connected' : 'Not Linked'}
+                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${googleStatus.connected ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-gray-400 border border-white/10'}`}>
+                                    {googleStatus.connected ? 'Connected' : 'Not Linked'}
                                 </div>
                             </div>
 
-                            {isConnected ? (
+                            {googleStatus.connected ? (
                                 <div className="space-y-4">
                                     <div className="p-4 bg-black/20 rounded-2xl border border-white/5">
                                         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-1">Attached Class</p>
-                                        <p className="truncate text-sm font-bold text-white">{classroomLink}</p>
+                                        <p className="truncate text-sm font-bold text-white">{googleStatus.link}</p>
+                                    </div>
+
+                                    <div className="flex items-center justify-between px-2">
+                                        <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">
+                                            Last Sync: {googleStatus.lastSync ? new Date(googleStatus.lastSync).toLocaleTimeString() : 'Never'}
+                                        </p>
+                                        <p className="text-[9px] text-indigo-400 font-black uppercase">
+                                            {googleStatus.assignmentCount} Missions
+                                        </p>
                                     </div>
 
                                     <div className="flex items-center gap-2">
@@ -527,10 +539,12 @@ const AntigravityDashboard: React.FC = () => {
 
                                         <button
                                             onClick={async () => {
-                                                await api.post('/api/google/disconnect');
-                                                setClassroomLink('');
-                                                setIsConnected(false);
-                                                fetchData();
+                                                if (window.confirm('Are you sure you want to disconnect Google Classroom?')) {
+                                                    await api.post('/api/google/disconnect');
+                                                    setIsConnected(false);
+                                                    setGoogleStatus({ connected: false, link: '', lastSync: null, assignmentCount: 0 });
+                                                    fetchData();
+                                                }
                                             }}
                                             className="px-4 py-3 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
                                         >
@@ -559,7 +573,6 @@ const AntigravityDashboard: React.FC = () => {
                                             onClick={async () => {
                                                 if (!classroomLink.trim()) return;
                                                 await api.post('/api/google/connect', { link: classroomLink });
-                                                setIsConnected(true);
                                                 handleSync();
                                             }}
                                             className="w-full py-4 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"

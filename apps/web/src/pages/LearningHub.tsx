@@ -10,7 +10,7 @@ const LearningHub: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [isGenerating, setIsGenerating] = useState(false);
-    const [missions, setMissions] = useState<string[]>([]);
+    const [missions, setMissions] = useState<any[]>([]);
     const [activeTool, setActiveTool] = useState<string | null>(null);
 
     // AI Tool States
@@ -30,14 +30,34 @@ const LearningHub: React.FC = () => {
     const handleGenerateMissions = async () => {
         setIsGenerating(true);
         try {
-            const res = await api.post('/api/ai/generate-missions', {});
-            if (res.data.success) {
-                setMissions(res.data.missions);
-            }
+            const res = await api.post('/api/ai/missions');
+            setMissions(res.data.missions);
         } catch (err) {
             console.error('Failed to generate missions', err);
             // Fallback for demo
-            setMissions(['Master Quadratic Functions', 'Analyze Cellular Respiration', 'Intro to Neural Networks']);
+            setMissions([
+                {
+                    title: 'Master Quadratic Functions',
+                    subject: 'math',
+                    difficulty: 'intermediate',
+                    xpReward: 150,
+                    estimatedTime: '2h'
+                },
+                {
+                    title: 'Analyze Cellular Respiration',
+                    subject: 'biology',
+                    difficulty: 'advanced',
+                    xpReward: 250,
+                    estimatedTime: '3h'
+                },
+                {
+                    title: 'Intro to Neural Networks',
+                    subject: 'cs',
+                    difficulty: 'beginner',
+                    xpReward: 100,
+                    estimatedTime: '1.5h'
+                }
+            ]);
         } finally {
             setIsGenerating(false);
         }
@@ -125,17 +145,34 @@ const LearningHub: React.FC = () => {
                                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                     {missions.map((mission, i) => (
                                         <div key={i} className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-apollo-indigo/30 transition-all cursor-pointer group shadow-xl">
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-12 h-12 bg-apollo-indigo/20 rounded-2xl flex items-center justify-center font-black text-apollo-indigo">
-                                                    0{i + 1}
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 bg-apollo-indigo/20 rounded-2xl flex items-center justify-center font-black text-apollo-indigo text-xl">
+                                                    {i + 1}
                                                 </div>
-                                                <div className="font-bold text-white text-lg">{mission}</div>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="px-2 py-0.5 bg-apollo-indigo/10 text-apollo-indigo rounded text-[10px] font-black uppercase tracking-widest border border-apollo-indigo/20">
+                                                            {mission.subject}
+                                                        </span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${mission.difficulty === 'advanced' ? 'bg-red-500/10 text-red-500' :
+                                                                mission.difficulty === 'intermediate' ? 'bg-yellow-500/10 text-yellow-500' :
+                                                                    'bg-green-500/10 text-green-500'
+                                                            }`}>
+                                                            {mission.difficulty}
+                                                        </span>
+                                                    </div>
+                                                    <div className="font-bold text-white text-xl">{mission.title}</div>
+                                                    <div className="flex items-center gap-4 mt-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                                        <span>{mission.estimatedTime || mission.estimated_time}</span>
+                                                        <span className="text-apollo-indigo">+{mission.xpReward || mission.xp_reward} XP</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <button
                                                 onClick={() => navigate('/student/assignments')}
-                                                className="p-3 bg-white/5 rounded-2xl text-gray-500 group-hover:text-white group-hover:bg-apollo-indigo transition-all"
+                                                className="p-4 bg-white/5 rounded-2xl text-gray-500 group-hover:text-white group-hover:bg-apollo-indigo transition-all"
                                             >
-                                                <ArrowRight size={20} />
+                                                <ArrowRight size={24} />
                                             </button>
                                         </div>
                                     ))}

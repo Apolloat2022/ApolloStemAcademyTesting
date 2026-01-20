@@ -153,7 +153,51 @@ CREATE TABLE parent_student_map (
     FOREIGN KEY (student_id) REFERENCES users(id)
 );
 
+-- Student Goals Table
+CREATE TABLE IF NOT EXISTS student_goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    subject TEXT,
+    target_date DATE,
+    priority TEXT DEFAULT 'medium',
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- AI Missions Table
+CREATE TABLE IF NOT EXISTS ai_missions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    difficulty TEXT NOT NULL,
+    estimated_time TEXT NOT NULL,
+    xp_reward INTEGER NOT NULL,
+    objectives TEXT NOT NULL, -- JSON array
+    description TEXT,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- SEED DATA
 INSERT OR IGNORE INTO users (id, email, name, role) VALUES ('default_teacher', 'teacher@apollo.edu', 'Ms. Frizzle', 'teacher');
 INSERT OR IGNORE INTO classes (id, name, teacher_id) VALUES ('default_class', 'General STEM', 'default_teacher');
+
+-- Add last_sync_at to users table if not exists (using a more robust approach for SQLite)
+-- Note: SQLite doesn't support IF NOT EXISTS for ADD COLUMN directly in all versions, 
+-- but Wrangler D1 handles migrations well. Adding them here for the schema file.
+ALTER TABLE users ADD COLUMN last_sync_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN interests TEXT;
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_goals_student ON student_goals(student_id);
+CREATE INDEX IF NOT EXISTS idx_missions_student ON ai_missions(student_id);
+CREATE INDEX IF NOT EXISTS idx_assignments_student ON assignments(class_id); -- Class assignments usually filter by class or student through enrollments
 

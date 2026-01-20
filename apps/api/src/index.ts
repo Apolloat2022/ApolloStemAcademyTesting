@@ -5,6 +5,17 @@ import { createToken, authMiddleware, roleMiddleware } from './auth'
 import { aiIntelligence, geminiService } from './ai_services'
 import { User } from '@apollo/types'
 import { getGoogleAuthUrl, exchangeCodeForTokens } from './google_auth'
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
+
+// Schema for goal creation
+const GoalSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  subject: z.string().optional(),
+  targetDate: z.string().optional(),
+  priority: z.enum(['low', 'medium', 'high']).default('medium')
+});
 
 const app = new Hono<{ Bindings: { DB: D1Database } }>()
 
@@ -229,6 +240,253 @@ app.put('/api/student/tasks/:id', authMiddleware, roleMiddleware(['student']), a
   }
   return c.json({ success: true });
 })
+
+// --- Student Goals API ---
+app.get('/api/student/goals', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+    if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+
+    const goals = await c.env.DB.prepare(`
+      SELECT * FROM student_goals 
+      WHERE student_id = ? 
+      ORDER BY 
+        CASE priority 
+          WHEN 'high' THEN 1
+          WHEN 'medium' THEN 2
+          WHEN 'low' THEN 3
+        END,
+        target_date ASC
+    `).bind(userId).all();
+
+    return c.json({ goals: goals.results });
+  } catch (error) {
+    console.error('Error fetching goals:', error);
+    return c.json({ error: 'Failed to fetch goals' }, 500);
+  }
+});
+
+app.post('/api/student/goals', authMiddleware, roleMiddleware(['student']), zValidator('json', GoalSchema), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+    if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+
+    const goal = c.req.valid('json');
+
+    const result = await c.env.DB.prepare(`
+      INSERT INTO student_goals 
+      (student_id, title, description, subject, target_date, priority, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    `).bind(
+      userId,
+      goal.title,
+      goal.description || '',
+      goal.subject || '',
+      goal.targetDate || null,
+      goal.priority
+    ).run();
+
+    const newGoal = await c.env.DB.prepare(
+      'SELECT * FROM student_goals WHERE id = ?'
+    ).bind(result.meta.last_row_id).first();
+
+    return c.json({
+      success: true,
+      goal: newGoal
+    });
+  } catch (error) {
+    console.error('Error creating goal:', error);
+    return c.json({ error: 'Failed to create goal' }, 500);
+  }
+});
+
+app.put('/api/student/goals/:id/complete', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+    const goalId = c.req.param('id');
+
+    await c.env.DB.prepare(`
+      UPDATE student_goals 
+      SET completed = true, completed_at = datetime('now')
+      WHERE id = ? AND student_id = ?
+    `).bind(goalId, userId).run();
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error completing goal:', error);
+    return c.json({ error: 'Failed to update goal' }, 500);
+  }
+});
+
+// --- Google Classroom Status API ---
+app.get('/api/google/status', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+
+    const user = await c.env.DB.prepare(
+      'SELECT google_classroom_link, last_sync_at FROM users WHERE id = ?'
+    ).bind(userId).first() as any;
+
+    const assignments = await c.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM assignments a JOIN enrollments e ON a.class_id = e.class_id WHERE e.student_id = ?'
+    ).bind(userId).first() as any;
+
+    return c.json({
+      connected: !!user?.google_classroom_link,
+      link: user?.google_classroom_link || '',
+      lastSync: user?.last_sync_at || null,
+      assignmentCount: assignments?.count || 0
+    });
+  } catch (error) {
+    console.error('Error checking Google status:', error);
+    return c.json({ error: 'Failed to check status' }, 500);
+  }
+});
+
+app.post('/api/google/connect', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+    const { link } = await c.req.json();
+
+    if (!link || (!link.includes('classroom.google.com') && !/^[a-z0-9-]+$/i.test(link))) {
+      return c.json({ error: 'Invalid Google Classroom link' }, 400);
+    }
+
+    await c.env.DB.prepare(`
+      UPDATE users 
+      SET google_classroom_link = ?, last_sync_at = datetime('now')
+      WHERE id = ?
+    `).bind(link, userId).run();
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error connecting Google Classroom:', error);
+    return c.json({ error: 'Failed to connect' }, 500);
+  }
+});
+
+// --- AI Mission Generation API ---
+app.post('/api/ai/missions', authMiddleware, roleMiddleware(['student']), async (c) => {
+  try {
+    const payload = c.get('jwtPayload') as any;
+    const userId = payload.id;
+    const apiKey = (c.env as any).GEMINI_API_KEY;
+
+    // Get user context
+    const [subjects, progress, userProfile] = await Promise.all([
+      c.env.DB.prepare(`
+        SELECT DISTINCT c.name as subject 
+        FROM assignments a 
+        JOIN classes c ON a.class_id = c.id
+        JOIN enrollments e ON c.id = e.class_id
+        WHERE e.student_id = ?
+        LIMIT 5
+      `).bind(userId).all(),
+
+      c.env.DB.prepare(`
+        SELECT activity_type, AVG(performance_score) as avg_score, COUNT(*) as attempt_count
+        FROM progress_logs 
+        WHERE student_id = ?
+        GROUP BY activity_type
+      `).bind(userId).all(),
+
+      c.env.DB.prepare(
+        'SELECT interests FROM users WHERE id = ?'
+      ).bind(userId).first() as any
+    ]);
+
+    const prompt = `As an AI STEM tutor, generate 3 personalized learning missions for a student.
+
+Student Profile:
+- Subjects: ${subjects.results.map((s: any) => s.subject).join(', ')}
+- Performance: ${JSON.stringify(progress.results)}
+- Interests: ${userProfile?.interests || 'STEM, Technology, Science'}
+
+For each mission, provide:
+1. A creative, engaging title (max 6 words)
+2. Subject area (math, physics, cs, chemistry, biology, english)
+3. Difficulty (beginner/intermediate/advanced)
+4. Estimated completion time (1-4 hours)
+5. XP reward (50-300 based on difficulty)
+6. 3 specific learning objectives
+7. A brief description
+
+Return ONLY a JSON array of exactly 3 missions.`;
+
+    let missions = [];
+
+    if (apiKey) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.8,
+              maxOutputTokens: 1500
+            }
+          })
+        }
+      );
+
+      const data = await response.json() as any;
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (generatedText) {
+        missions = JSON.parse(generatedText.replace(/```json\n?|\n?```/g, ''));
+
+        // Store missions for this user
+        for (const mission of missions) {
+          await c.env.DB.prepare(`
+            INSERT INTO ai_missions 
+            (student_id, title, subject, difficulty, estimated_time, xp_reward, objectives, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+          `).bind(
+            userId,
+            mission.title,
+            mission.subject,
+            mission.difficulty,
+            mission.estimatedTime || mission.estimated_time,
+            mission.xpReward || mission.xp_reward,
+            JSON.stringify(mission.objectives),
+            mission.description
+          ).run();
+        }
+      }
+    }
+
+    if (missions.length === 0) {
+      // Fallback missions
+      missions = [
+        {
+          title: "Master Quadratic Functions",
+          subject: "math",
+          difficulty: "intermediate",
+          estimatedTime: "2 hours",
+          xpReward: 150,
+          objectives: [
+            "Solve quadratic equations using 3 methods",
+            "Graph parabolas from standard form",
+            "Apply to real-world physics problems"
+          ],
+          description: "Deep dive into quadratic equations, graphs, and applications"
+        }
+      ];
+    }
+
+    return c.json({ missions });
+  } catch (error) {
+    console.error('AI mission generation error:', error);
+    return c.json({ error: 'Failed to generate missions' }, 500);
+  }
+});
 
 // AI Intelligence Routes
 app.get('/api/reports/:studentId', authMiddleware, roleMiddleware(['teacher', 'volunteer']), async (c) => {
@@ -919,16 +1177,16 @@ app.post('/api/ai/generate', async (c) => {
 app.get('/api/student/classroom-link', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload') as any;
   const userId = payload.id;
-  
+
   if (!c.env.DB) return c.json({ link: '', connected: false });
 
   const result = await c.env.DB.prepare(
     'SELECT google_classroom_link FROM users WHERE id = ?'
   ).bind(userId).first() as any;
-  
-  return c.json({ 
+
+  return c.json({
     link: result?.google_classroom_link || '',
-    connected: !!result?.google_classroom_link 
+    connected: !!result?.google_classroom_link
   });
 });
 
@@ -937,13 +1195,13 @@ app.post('/api/google/connect', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload') as any;
   const userId = payload.id;
   const { link } = await c.req.json();
-  
+
   if (c.env.DB) {
     await c.env.DB.prepare(
       'UPDATE users SET google_classroom_link = ? WHERE id = ?'
     ).bind(link, userId).run();
   }
-  
+
   return c.json({ success: true });
 });
 
@@ -951,13 +1209,13 @@ app.post('/api/google/connect', authMiddleware, async (c) => {
 app.post('/api/google/disconnect', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload') as any;
   const userId = payload.id;
-  
+
   if (c.env.DB) {
     await c.env.DB.prepare(
       'UPDATE users SET google_classroom_link = NULL WHERE id = ?'
     ).bind(userId).run();
   }
-  
+
   return c.json({ success: true });
 });
 
