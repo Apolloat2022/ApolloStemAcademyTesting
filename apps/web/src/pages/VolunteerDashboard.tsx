@@ -1,5 +1,6 @@
 import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
+import GoogleClassroomConnect from '../components/GoogleClassroomConnect';
 import { Heart, MessagesSquare, ShieldAlert, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,6 +22,16 @@ const VolunteerDashboard: React.FC = () => {
                         </div>
                     </div>
                 </header>
+
+                {/* Google Classroom Integration */}
+                <div className="mb-8">
+                    <GoogleClassroomConnect 
+                        userRole="volunteer" 
+                        onSyncComplete={() => {
+                            // Refresh volunteer data if needed
+                        }}
+                    />
+                </div>
 
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="glass p-8 rounded-3xl border-white/5 hover:bg-white/5 transition-all group cursor-pointer">

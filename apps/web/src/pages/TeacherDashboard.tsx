@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
+import GoogleClassroomConnect from '../components/GoogleClassroomConnect';
 import { Users, BookOpen, ClipboardCheck, BarChart3, Sparkles, X, BrainCircuit, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
@@ -15,22 +16,22 @@ const TeacherDashboard: React.FC = () => {
     const [isDraftingFeedback, setIsDraftingFeedback] = useState(false);
     const [pendingSubmissions, setPendingSubmissions] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'overview' | 'assignments'>('overview');
-    const [isSyncing, setIsSyncing] = useState(false);
     const [stats, setStats] = useState({ students: 0, assignments: 0, submissions: 0, engagement: 0 });
 
+    const fetchDashboardData = async () => {
+        try {
+            const [pendingRes, statsRes] = await Promise.all([
+                api.get('/api/submissions/pending'),
+                api.get('/api/teacher/dashboard-stats')
+            ]);
+            setPendingSubmissions(pendingRes.data);
+            setStats(statsRes.data);
+        } catch (err) {
+            console.error('Failed to fetch dashboard data', err);
+        }
+    };
+
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const [pendingRes, statsRes] = await Promise.all([
-                    api.get('/api/submissions/pending'),
-                    api.get('/api/teacher/dashboard-stats')
-                ]);
-                setPendingSubmissions(pendingRes.data);
-                setStats(statsRes.data);
-            } catch (err) {
-                console.error('Failed to fetch dashboard data', err);
-            }
-        };
         fetchDashboardData();
     }, []);
 
@@ -60,21 +61,6 @@ const TeacherDashboard: React.FC = () => {
                         <p className="text-gray-400">Manage your students and AI-powered curriculum.</p>
                     </div>
                     <div className="flex gap-4 items-center">
-                        <button
-                            onClick={async () => {
-                                setIsSyncing(true);
-                                try {
-                                    await api.post('/api/google/sync');
-                                } catch (e) {
-                                    console.error('Sync failed', e);
-                                }
-                                setIsSyncing(false);
-                            }}
-                            className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-white/10 transition-all text-sm group"
-                        >
-                            <RefreshCw size={18} className={`${isSyncing ? 'animate-spin text-apollo-indigo' : 'text-gray-400 group-hover:text-white'}`} />
-                            {isSyncing ? 'Syncing Classroom...' : 'Sync Google Classroom'}
-                        </button>
                         {reviewItem && (
                             <button
                                 onClick={() => setReviewItem(null)}
@@ -115,120 +101,90 @@ const TeacherDashboard: React.FC = () => {
                                             onClick={async () => {
                                                 setIsDraftingFeedback(true);
                                                 try {
-                                                    const res = await api.post('/api/ai/draft-feedback', {
-                                                        submissionContent: reviewItem.content,
-                                                        title: reviewItem.assignmentTitle,
-                                                        description: reviewItem.description
-                                                    });
-                                                    setAiFeedbackDraft(res.data.draft);
-                                                } catch (err) {
-                                                    console.error('Draft failed', err);
-                                                    alert('AI Co-pilot is busy. Please try again.');
-                                                } finally {
-                                                    setIsDraftingFeedback(false);
+                                                    const res = await api.post(`/api/submissions/${reviewItem.id}/generate-feedback`);
+                                                    setAiFeedbackDraft(res.data.feedback);
+                                                } catch (e) {
+                                                    console.error(e);
+                                                    setAiFeedbackDraft('Failed to generate feedback. Please try again.');
                                                 }
+                                                setIsDraftingFeedback(false);
                                             }}
-                                            className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors group"
+                                            className="px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 text-xs font-bold flex items-center gap-2 hover:bg-purple-500/20 transition-all"
                                         >
-                                            <Sparkles size={14} className="group-hover:animate-pulse" />
-                                            AI Draft Feedback
+                                            {isDraftingFeedback ? (
+                                                <>
+                                                    <Loader2 size={14} className="animate-spin" />
+                                                    Drafting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Sparkles size={14} />
+                                                    AI Draft Feedback
+                                                </>
+                                            )}
                                         </button>
                                     )}
                                 </div>
 
-                                {aiFeedbackDraft ? (
-                                    <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-6 mb-6 animate-in fade-in slide-in-from-top-2">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-2 text-indigo-400 font-black text-[10px] uppercase tracking-widest">
-                                                <BrainCircuit size={14} /> AI Suggested Feedback
-                                            </div>
-                                            <button onClick={() => setAiFeedbackDraft(null)} className="text-gray-500 hover:text-white transition-colors">
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                        <p className="text-gray-300 text-sm italic leading-relaxed mb-4">
-                                            "{aiFeedbackDraft}"
-                                        </p>
-                                        <button
-                                            className="text-xs font-bold text-indigo-400 hover:underline"
-                                            onClick={() => {
-                                                alert('Draft ready to use!');
-                                                setAiFeedbackDraft(null);
-                                            }}
-                                        >
-                                            Use this draft
-                                        </button>
+                                {aiFeedbackDraft && (
+                                    <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-4 mb-4 animate-in fade-in slide-in-from-top-2">
+                                        <p className="text-gray-300 text-sm leading-relaxed">{aiFeedbackDraft}</p>
                                     </div>
-                                ) : isDraftingFeedback ? (
-                                    <div className="bg-white/5 border border-white/5 rounded-2xl p-8 mb-6 text-center">
-                                        <Loader2 className="w-6 h-6 text-indigo-500 animate-spin mx-auto mb-2" />
-                                        <p className="text-gray-500 text-xs font-medium animate-pulse">AI is reviewing submission...</p>
-                                    </div>
-                                ) : null}
+                                )}
 
-                                <div className="flex gap-4">
-                                    <button className="flex-1 bg-green-500 text-black font-bold py-4 rounded-2xl hover:bg-green-400 transition-all flex items-center justify-center gap-2">
-                                        <CheckCircle2 size={20} />
-                                        Approve & Grade
-                                    </button>
-                                    <button className="px-6 bg-white/5 border border-white/10 rounded-2xl font-bold hover:bg-white/10 transition-all">
-                                        Request Revision
-                                    </button>
-                                </div>
+                                <input type="number" placeholder="Grade (0-100)" className="w-full mb-4 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white focus:border-apollo-indigo/50 outline-none" />
+                                <textarea placeholder="Optional teacher feedback..." className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-white focus:border-apollo-indigo/50 outline-none mb-4" rows={4} />
+                                <button className="w-full py-3 bg-green-500 rounded-xl text-white font-bold flex items-center justify-center gap-2 hover:bg-green-600 transition-all">
+                                    <CheckCircle2 size={18} />
+                                    Submit Grade & Feedback
+                                </button>
                             </div>
                         </div>
 
-                        {/* AI Grading Assistant */}
-                        <div className="glass rounded-3xl p-8 border-yellow-500/20 bg-yellow-500/5">
-                            <h2 className="text-2xl font-bold mb-4 flex items-center gap-3 text-white">
-                                <BrainCircuit className="text-yellow-400" />
-                                AI Grading Assistant
-                            </h2>
+                        {/* AI Analysis Panel */}
+                        <div className="glass rounded-3xl p-8 border-white/5">
+                            <h2 className="text-2xl font-bold mb-6 text-white">AI Insight</h2>
 
-                            {!aiInsight && !isAnalyzing ? (
-                                <div className="text-center py-20">
-                                    <p className="text-gray-400 mb-6">Need a second opinion? Let Apollo AI analyze this submission.</p>
+                            {!aiInsight ? (
+                                <div className="text-center py-16">
+                                    <BrainCircuit size={60} className="mx-auto mb-6 text-gray-700" />
+                                    <p className="text-gray-500 mb-6">Get AI-powered analysis on this submission</p>
                                     <button
                                         onClick={runAIAnalyze}
-                                        className="bg-yellow-400 text-black px-8 py-4 rounded-2xl font-bold flex items-center gap-2 mx-auto hover:scale-105 transition-all shadow-lg shadow-yellow-400/20"
+                                        className="px-6 py-3 bg-apollo-indigo rounded-xl font-bold text-white hover:scale-105 transition-all flex items-center gap-2 mx-auto"
+                                        disabled={isAnalyzing}
                                     >
-                                        <Sparkles size={20} />
-                                        Analyze Submission
+                                        {isAnalyzing ? (
+                                            <>
+                                                <Loader2 className="animate-spin" size={18} />
+                                                Analyzing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles size={18} />
+                                                Analyze with AI
+                                            </>
+                                        )}
                                     </button>
-                                </div>
-                            ) : isAnalyzing ? (
-                                <div className="text-center py-20">
-                                    <div className="w-12 h-12 border-4 border-yellow-400/20 border-t-yellow-400 rounded-full animate-spin mx-auto mb-4"></div>
-                                    <p className="text-yellow-400 font-bold animate-pulse">Consulting Gemini AI...</p>
                                 </div>
                             ) : (
-                                <div className="space-y-6 animate-in fade-in zoom-in duration-300">
-                                    <div className="bg-white/5 border border-yellow-500/20 rounded-2xl p-6 text-gray-200 indent-0">
-                                        {aiInsight}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                                            <div className="text-xs text-gray-500 uppercase font-bold mb-1">AI Confidence</div>
-                                            <div className="text-xl font-bold text-white">98%</div>
-                                        </div>
-                                        <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
-                                            <div className="text-xs text-gray-500 uppercase font-bold mb-1">Detected Effort</div>
-                                            <div className="text-xl font-bold text-white">High</div>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setAiInsight(null)}
-                                        className="w-full text-sm text-gray-400 hover:text-white transition-all"
-                                    >
-                                        Dismiss AI Analysis
-                                    </button>
+                                <div className="bg-white/5 rounded-2xl p-6 border border-white/5 animate-in fade-in slide-in-from-bottom-4">
+                                    <p className="text-gray-300 leading-relaxed whitespace-pre-line">{aiInsight}</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 ) : (
                     <>
-                        <div className="flex gap-8 border-b border-white/10 mb-10">
+                        {/* Google Classroom Integration */}
+                        <div className="mb-8">
+                            <GoogleClassroomConnect 
+                                userRole="teacher" 
+                                onSyncComplete={fetchDashboardData}
+                            />
+                        </div>
+
+                        <div className="flex gap-6 border-b border-white/5 mb-8">
                             <button
                                 onClick={() => setActiveTab('overview')}
                                 className={`pb-4 text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'overview' ? 'text-apollo-indigo border-b-2 border-apollo-indigo' : 'text-gray-500 hover:text-white'}`}

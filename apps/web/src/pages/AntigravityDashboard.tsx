@@ -121,7 +121,8 @@ const AntigravityDashboard: React.FC = () => {
             }));
 
             setAssignments([...classMapped, ...personalMapped]);
-            setIsConnected(statusRes.data.isConnected);
+            setGoogleStatus(statusRes.data);
+            setIsConnected(statusRes.data.connected);
             setLeaderboard(leaderboardRes.data);
             setSquads(squadsRes.data);
         } catch (error) {
@@ -570,14 +571,22 @@ const AntigravityDashboard: React.FC = () => {
                                         />
 
                                         <button
+                                            disabled={syncStatus === 'syncing'}
                                             onClick={async () => {
                                                 if (!classroomLink.trim()) return;
-                                                await api.post('/api/google/connect', { link: classroomLink });
-                                                handleSync();
+                                                setSyncStatus('syncing');
+                                                try {
+                                                    await api.post('/api/google/connect', { link: classroomLink });
+                                                    await handleSync();
+                                                } catch (e) {
+                                                    console.error('Connection failed', e);
+                                                    alert('Failed to connect. Please check the link and try again.');
+                                                    setSyncStatus('idle');
+                                                }
                                             }}
-                                            className="w-full py-4 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
+                                            className="w-full py-4 bg-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50"
                                         >
-                                            Connect Academy
+                                            {syncStatus === 'syncing' ? 'Connecting...' : 'Connect Academy'}
                                         </button>
                                     </div>
                                 </div>

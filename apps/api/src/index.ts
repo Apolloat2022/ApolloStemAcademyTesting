@@ -153,14 +153,46 @@ app.post('/api/auth/google/callback', authMiddleware, async (c) => {
   }
 });
 
+// UPDATED: Check Google Classroom connection status
 app.get('/api/auth/google/status', authMiddleware, async (c) => {
   const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+
   if (c.env.DB) {
-    const token = await c.env.DB.prepare('SELECT user_id FROM google_oauth_tokens WHERE user_id = ?').bind(payload.id).first();
-    return c.json({ isConnected: !!token });
+    const tokenData = await c.env.DB.prepare(
+      'SELECT user_id FROM google_oauth_tokens WHERE user_id = ?'
+    ).bind(userId).first();
+
+    const userData = await c.env.DB.prepare(
+      'SELECT last_sync_at FROM users WHERE id = ?'
+    ).bind(userId).first() as any;
+
+    return c.json({
+      isConnected: !!tokenData,
+      lastSync: userData?.last_sync_at || null
+    });
   }
-  return c.json({ isConnected: false });
+
+  return c.json({ isConnected: false, lastSync: null });
 });
+
+app.post('/api/google/disconnect', authMiddleware, async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+
+  if (c.env.DB) {
+    await c.env.DB.prepare(
+      'DELETE FROM google_oauth_tokens WHERE user_id = ?'
+    ).bind(userId).run();
+
+    await c.env.DB.prepare(
+      'UPDATE users SET google_classroom_link = NULL, last_sync_at = NULL WHERE id = ?'
+    ).bind(userId).run();
+  }
+
+  return c.json({ success: true });
+});
+
 
 // Protected Routes Example
 app.get('/api/student/dashboard-stats', authMiddleware, roleMiddleware(['student']), async (c) => {
@@ -202,23 +234,6 @@ app.get('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async
   return c.json([]);
 })
 
-app.get('/api/student/classroom-link', authMiddleware, roleMiddleware(['student']), async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  if (c.env.DB) {
-    const user = await c.env.DB.prepare('SELECT google_classroom_link FROM users WHERE id = ?').bind(payload.id).first() as any;
-    return c.json({ link: user?.google_classroom_link || '' });
-  }
-  return c.json({ link: '' });
-})
-
-app.post('/api/student/classroom-link', authMiddleware, roleMiddleware(['student']), async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  const { link } = await c.req.json();
-  if (c.env.DB) {
-    await c.env.DB.prepare('UPDATE users SET google_classroom_link = ? WHERE id = ?').bind(link, payload.id).run();
-  }
-  return c.json({ success: true });
-})
 
 app.post('/api/student/tasks', authMiddleware, roleMiddleware(['student']), async (c) => {
   const payload = c.get('jwtPayload') as any;
@@ -321,31 +336,6 @@ app.put('/api/student/goals/:id/complete', authMiddleware, roleMiddleware(['stud
   }
 });
 
-// --- Google Classroom Status API ---
-app.get('/api/google/status', authMiddleware, roleMiddleware(['student']), async (c) => {
-  try {
-    const payload = c.get('jwtPayload') as any;
-    const userId = payload.id;
-
-    const user = await c.env.DB.prepare(
-      'SELECT google_classroom_link, last_sync_at FROM users WHERE id = ?'
-    ).bind(userId).first() as any;
-
-    const assignments = await c.env.DB.prepare(
-      'SELECT COUNT(*) as count FROM assignments a JOIN enrollments e ON a.class_id = e.class_id WHERE e.student_id = ?'
-    ).bind(userId).first() as any;
-
-    return c.json({
-      connected: !!user?.google_classroom_link,
-      link: user?.google_classroom_link || '',
-      lastSync: user?.last_sync_at || null,
-      assignmentCount: assignments?.count || 0
-    });
-  } catch (error) {
-    console.error('Error checking Google status:', error);
-    return c.json({ error: 'Failed to check status' }, 500);
-  }
-});
 
 app.post('/api/google/connect', authMiddleware, roleMiddleware(['student']), async (c) => {
   try {
@@ -370,56 +360,95 @@ app.post('/api/google/connect', authMiddleware, roleMiddleware(['student']), asy
   }
 });
 
-app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async (c) => {
-  try {
-    const payload = c.get('jwtPayload') as any;
-    const userId = payload.id;
+// UPDATED: Google Classroom Sync - Supports Student, Teacher, Volunteer
+app.post('/api/google/sync', authMiddleware, roleMiddleware(['student', 'teacher', 'volunteer']), async (c) => {
+  const payload = c.get('jwtPayload') as any;
+  const userId = payload.id;
+  const userRole = payload.role;
 
-    // In a real app, we would fetch from Google Classroom API here.
-    // For this context, we will simulate importing 2 new missions from Google.
-
-    const user = await c.env.DB.prepare('SELECT google_classroom_link FROM users WHERE id = ?').bind(userId).first() as any;
-    if (!user?.google_classroom_link) {
-      return c.json({ error: 'No classroom linked' }, 400);
-    }
-
-    const assignments = [
-      { id: crypto.randomUUID(), title: 'Rocket Propulsion Lab', description: 'Analyze Newton\'s Third Law with water rockets.', subject: 'Physics', due_date: 'Jan 28, 2026' },
-      { id: crypto.randomUUID(), title: 'Genetic Mutations Seminar', description: 'Explore CRISPR and the future of bio-engineering.', subject: 'Biology', due_date: 'Feb 5, 2026' }
-    ];
-
-    for (const a of assignments) {
-      // Find a default class for the student if class_id is needed, or use a placeholder
-      await c.env.DB.prepare(`
-        INSERT OR IGNORE INTO assignments (id, class_id, title, description, due_date)
-        VALUES (?, ?, ?, ?, ?)
-      `).bind(a.id, 'default_class', a.title, a.description, a.due_date).run();
-    }
-
-    await c.env.DB.prepare(`
-      UPDATE users SET last_sync_at = datetime('now') WHERE id = ?
-    `).bind(userId).run();
-
-    return c.json({ success: true, imported: assignments.length });
-  } catch (error) {
-    console.error('Error syncing Google Classroom:', error);
-    return c.json({ error: 'Failed to sync' }, 500);
+  if (!c.env.DB) {
+    return c.json({ success: false, message: "Database not connected" }, 500);
   }
-});
 
-app.post('/api/google/disconnect', authMiddleware, roleMiddleware(['student']), async (c) => {
   try {
-    const payload = c.get('jwtPayload') as any;
-    const userId = payload.id;
+    const tokenData = await c.env.DB.prepare(
+      'SELECT access_token, refresh_token, expires_at FROM google_oauth_tokens WHERE user_id = ?'
+    ).bind(userId).first() as any;
 
-    await c.env.DB.prepare(`
-      UPDATE users SET google_classroom_link = NULL, last_sync_at = NULL WHERE id = ?
-    `).bind(userId).run();
+    if (!tokenData || !tokenData.access_token) {
+      return c.json({
+        success: false,
+        error: 'No Google Classroom connection found. Please connect first.'
+      }, 400);
+    }
 
-    return c.json({ success: true });
-  } catch (error) {
-    console.error('Error disconnecting Google Classroom:', error);
-    return c.json({ error: 'Failed to disconnect' }, 500);
+    let accessToken = tokenData.access_token;
+    if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
+      if (!tokenData.refresh_token) {
+        return c.json({
+          success: false,
+          error: 'Token expired. Please reconnect to Google Classroom.'
+        }, 401);
+      }
+
+      const { refreshGoogleToken } = await import('./google_auth');
+      const newTokens = await refreshGoogleToken(c.env, tokenData.refresh_token) as any;
+      accessToken = newTokens.access_token;
+
+      await c.env.DB.prepare(`
+        UPDATE google_oauth_tokens 
+        SET access_token = ?, expires_at = ?
+        WHERE user_id = ?
+      `).bind(
+        accessToken,
+        new Date(Date.now() + (newTokens.expires_in || 3600) * 1000).toISOString(),
+        userId
+      ).run();
+    }
+
+    const { googleClassroom } = await import('./google_classroom');
+
+    let result;
+    switch (userRole) {
+      case 'student':
+        result = await googleClassroom.syncStudentCourses(c.env, accessToken, userId);
+        await c.env.DB.prepare('UPDATE users SET last_sync_at = datetime("now") WHERE id = ?').bind(userId).run();
+        return c.json({
+          success: true,
+          message: `Successfully synchronized! ${result.count} assignments imported.`,
+          imported: result.count
+        });
+
+      case 'teacher':
+        result = await googleClassroom.syncTeacherCourses(c.env, accessToken, userId);
+        await c.env.DB.prepare('UPDATE users SET last_sync_at = datetime("now") WHERE id = ?').bind(userId).run();
+        return c.json({
+          success: true,
+          message: `Successfully synchronized! ${result.classes} classes, ${result.assignments} assignments, and ${result.students} students imported.`,
+          imported: result.assignments,
+          classes: result.classes,
+          students: result.students
+        });
+
+      case 'volunteer':
+        result = await googleClassroom.syncVolunteerData(c.env, userId);
+        await c.env.DB.prepare('UPDATE users SET last_sync_at = datetime("now") WHERE id = ?').bind(userId).run();
+        return c.json({
+          success: true,
+          message: `Sync complete! Monitoring ${result.studentCount} students.`,
+          imported: 0,
+          studentCount: result.studentCount
+        });
+
+      default:
+        return c.json({ success: false, error: 'Invalid user role' }, 400);
+    }
+  } catch (e: any) {
+    console.error('Google Classroom sync failed:', e);
+    return c.json({
+      success: false,
+      error: e.message || 'Sync failed. Please try reconnecting to Google Classroom.'
+    }, 500);
   }
 });
 
@@ -1221,127 +1250,6 @@ async function handleAIGenerate(c: any) {
 // Centralized AI Tool Endpoint
 app.post('/api/ai/generate', async (c) => {
   return handleAIGenerate(c);
-});
-
-
-// --- Google Classroom Integration (Phase 4/5) ---
-
-// Check connection status
-app.get('/api/student/classroom-link', authMiddleware, async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  const userId = payload.id;
-
-  if (!c.env.DB) return c.json({ link: '', connected: false });
-
-  const result = await c.env.DB.prepare(
-    'SELECT google_classroom_link FROM users WHERE id = ?'
-  ).bind(userId).first() as any;
-
-  return c.json({
-    link: result?.google_classroom_link || '',
-    connected: !!result?.google_classroom_link
-  });
-});
-
-// Connect (save link)
-app.post('/api/google/connect', authMiddleware, async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  const userId = payload.id;
-  const { link } = await c.req.json();
-
-  if (c.env.DB) {
-    await c.env.DB.prepare(
-      'UPDATE users SET google_classroom_link = ? WHERE id = ?'
-    ).bind(link, userId).run();
-  }
-
-  return c.json({ success: true });
-});
-
-// Disconnect
-app.post('/api/google/disconnect', authMiddleware, async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  const userId = payload.id;
-
-  if (c.env.DB) {
-    await c.env.DB.prepare(
-      'UPDATE users SET google_classroom_link = NULL WHERE id = ?'
-    ).bind(userId).run();
-  }
-
-  return c.json({ success: true });
-});
-
-app.post('/api/google/sync', authMiddleware, roleMiddleware(['student']), async (c) => {
-  const payload = c.get('jwtPayload') as any;
-  const { token: providedToken, link } = await c.req.json().catch(() => ({ token: null, link: null }));
-
-  if (c.env.DB) {
-    try {
-      // If a link was provided during sync, save it
-      if (link) {
-        await c.env.DB.prepare('UPDATE users SET google_classroom_link = ? WHERE id = ?').bind(link, payload.id).run();
-      }
-
-      // Try to find a stored token
-      let tokenToUse = providedToken;
-      if (!tokenToUse) {
-        const stored = await c.env.DB.prepare('SELECT access_token FROM google_oauth_tokens WHERE user_id = ?').bind(payload.id).first() as any;
-        if (stored) tokenToUse = stored.access_token;
-      }
-
-      // 1. Real Sync Path (if token available)
-      if (tokenToUse && (tokenToUse.startsWith('sq.') || tokenToUse.length > 20)) {
-        const { googleClassroom } = await import('./google_classroom');
-        const result = await googleClassroom.syncStudentCourses(c.env, tokenToUse, payload.id);
-        return c.json({
-          success: true,
-          message: `Successfully synchronized! ${result.count} real assignments imported.`,
-          imported: result.count
-        });
-      }
-
-      // 2. Mock/Demo Sync Path (Default fallback if no real token)
-      const mockClassId = 'default_class';
-      const importedAssignments = [
-        {
-          id: 'imported_gc_1',
-          title: '[Google Classroom] Physics: Motion Lab',
-          description: 'Imported from GC: Submit your lab report on projectile motion.',
-          section: 'Physics 101'
-        },
-        {
-          id: 'imported_gc_2',
-          title: '[Google Classroom] History: Civil War Essay',
-          description: 'Imported from GC: Draft your 5-paragraph essay.',
-          section: 'US History'
-        }
-      ];
-
-      // Ensure student is enrolled in default_class
-      await c.env.DB.prepare(
-        'INSERT OR IGNORE INTO enrollments (student_id, class_id) VALUES (?, ?)'
-      ).bind(payload.id, mockClassId).run();
-
-      for (const asgn of importedAssignments) {
-        await c.env.DB.prepare(
-          'INSERT OR IGNORE INTO assignments (id, class_id, title, description, due_date) VALUES (?, ?, ?, ?, ?)'
-        ).bind(asgn.id, mockClassId, asgn.title, asgn.description, 'Next Monday').run();
-      }
-
-      return c.json({
-        success: true,
-        message: "Demo Mode: Synced 2 sample assignments. (To use real Google Classroom, enable OAuth in admin setup).",
-        imported: 2
-      });
-
-    } catch (e: any) {
-      console.error('GC Sync failed', e);
-      return c.json({ success: false, error: e.message }, 500);
-    }
-  }
-
-  return c.json({ success: false, message: "Database not connected" }, 500);
 });
 
 export default app;

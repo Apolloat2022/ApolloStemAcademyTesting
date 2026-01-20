@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { authService } from '../services/authService';
+import GoogleClassroomConnect from '../components/GoogleClassroomConnect';
 import {
     BookOpen,
     ClipboardList,
@@ -24,37 +25,37 @@ const StudentDashboard: React.FC = () => {
     const [tasks, setTasks] = useState<any[]>([]);
     const [newTask, setNewTask] = useState('');
     const [showTaskInput, setShowTaskInput] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
+
+    const fetchDashboardData = async () => {
+        try {
+            // api client automatically handles token
+            const [rRes, aRes, sRes, tRes] = await Promise.all([
+                api.get('/api/student/recommendations'),
+                api.get('/api/student/achievements'),
+                api.get('/api/student/dashboard-stats'),
+                api.get('/api/student/tasks')
+            ]);
+            setRecs(rRes.data);
+            setStats(sRes.data);
+            setTasks(tRes.data);
+
+            // Detection logic for "New Achievement" toast
+            const justEarned = aRes.data.find((a: any) => a.earned && !localStorage.getItem(`notified_${a.id}`));
+            if (justEarned) {
+                setNewAchievement(justEarned);
+                localStorage.setItem(`notified_${justEarned.id}`, 'true');
+                setTimeout(() => setNewAchievement(null), 8000);
+            }
+
+        } catch (err) {
+            console.error('Failed to fetch dashboard data', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // api client automatically handles token
-                const [rRes, aRes, sRes, tRes] = await Promise.all([
-                    api.get('/api/student/recommendations'),
-                    api.get('/api/student/achievements'),
-                    api.get('/api/student/dashboard-stats'),
-                    api.get('/api/student/tasks')
-                ]);
-                setRecs(rRes.data);
-                setStats(sRes.data);
-                setTasks(tRes.data);
-
-                // Detection logic for "New Achievement" toast
-                const justEarned = aRes.data.find((a: any) => a.earned && !localStorage.getItem(`notified_${a.id}`));
-                if (justEarned) {
-                    setNewAchievement(justEarned);
-                    localStorage.setItem(`notified_${justEarned.id}`, 'true');
-                    setTimeout(() => setNewAchievement(null), 8000);
-                }
-
-            } catch (err) {
-                console.error('Failed to fetch dashboard data', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+        fetchDashboardData();
     }, []);
 
     const handleAddTask = async (e: React.FormEvent) => {
@@ -102,22 +103,6 @@ const StudentDashboard: React.FC = () => {
                     </div>
                     <div className="flex gap-4 items-center">
                         <button
-                            onClick={async () => {
-                                setIsSyncing(true);
-                                try {
-                                    await api.post('/api/google/sync');
-                                    alert('Google Classroom Linked!');
-                                } catch (e) {
-                                    alert('Sync failed');
-                                }
-                                setIsSyncing(false);
-                            }}
-                            className="bg-white/5 border border-white/10 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 hover:bg-white/10 transition-all text-sm"
-                        >
-                            <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`} />
-                            {isSyncing ? 'Syncing...' : 'Connect Google Classroom'}
-                        </button>
-                        <button
                             onClick={() => navigate('/student/hub')}
                             className="bg-apollo-indigo px-6 py-3 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-apollo-indigo/20 text-white"
                         >
@@ -127,6 +112,14 @@ const StudentDashboard: React.FC = () => {
                     </div>
                 </header>
 
+                {/* Google Classroom Integration */}
+                <div className="mb-8">
+                    <GoogleClassroomConnect 
+                        userRole="student" 
+                        onSyncComplete={fetchDashboardData}
+                    />
+                </div>
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {/* Quick Stats */}
                     <div onClick={() => navigate('/student/progress')} className="glass rounded-3xl p-6 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group border-white/5">
@@ -134,10 +127,9 @@ const StudentDashboard: React.FC = () => {
                             <BookOpen size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{stats.lessons}</div>
-                            <div className="text-gray-400 text-sm">Lessons Completed</div>
+                            <p className="text-gray-400 text-sm">Lessons Completed</p>
+                            <p className="text-3xl font-bold text-white">{stats.lessons}</p>
                         </div>
-                        <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
                     </div>
 
                     <div onClick={() => navigate('/student/assignments')} className="glass rounded-3xl p-6 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group border-white/5">
@@ -145,10 +137,9 @@ const StudentDashboard: React.FC = () => {
                             <ClipboardList size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{stats.assignments}</div>
-                            <div className="text-gray-400 text-sm">Pending Assignments</div>
+                            <p className="text-gray-400 text-sm">Pending Assignments</p>
+                            <p className="text-3xl font-bold text-white">{stats.assignments}</p>
                         </div>
-                        <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
                     </div>
 
                     <div onClick={() => navigate('/student/progress')} className="glass rounded-3xl p-6 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group border-white/5">
@@ -156,15 +147,14 @@ const StudentDashboard: React.FC = () => {
                             <TrendingUp size={24} />
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-white">{stats.accuracy}%</div>
-                            <div className="text-gray-400 text-sm">Average Accuracy</div>
+                            <p className="text-gray-400 text-sm">Overall Accuracy</p>
+                            <p className="text-3xl font-bold text-white">{stats.accuracy}%</p>
                         </div>
-                        <ArrowRight className="ml-auto opacity-0 group-hover:opacity-100 transition-all text-gray-500" size={18} />
                     </div>
                 </div>
 
-                <div className="mt-10 grid lg:grid-cols-3 gap-8">
-                    {/* AI Learning Path */}
+                <div className="grid lg:grid-cols-3 gap-8 mt-8">
+                    {/* AI Learning Missions */}
                     <div className="lg:col-span-2 glass rounded-[40px] p-10 relative overflow-hidden group border-white/5">
                         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                             <BrainCircuit size={160} />
