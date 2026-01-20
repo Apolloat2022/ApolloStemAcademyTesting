@@ -12,7 +12,6 @@ const GoogleClassroomConnect: React.FC<GoogleClassroomConnectProps> = ({ userRol
     const [isConnecting, setIsConnecting] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState<string | null>(null);
-    const [syncCount, setSyncCount] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -39,7 +38,7 @@ const GoogleClassroomConnect: React.FC<GoogleClassroomConnectProps> = ({ userRol
             const res = await api.get('/api/auth/google/url', {
                 params: { redirectUri }
             });
-            
+
             if (res.data.url) {
                 window.location.href = res.data.url;
             }
@@ -56,17 +55,16 @@ const GoogleClassroomConnect: React.FC<GoogleClassroomConnectProps> = ({ userRol
         try {
             const res = await api.post('/api/google/sync');
             if (res.data.success) {
-                setSyncCount(res.data.imported || 0);
                 setLastSync(new Date().toLocaleDateString());
                 if (onSyncComplete) onSyncComplete();
-                
+
                 // Show success message based on role
-                const message = userRole === 'student' 
+                const message = userRole === 'student'
                     ? `Successfully imported ${res.data.imported} assignments!`
                     : userRole === 'teacher'
-                    ? `Successfully synced ${res.data.imported} classes and assignments!`
-                    : `Successfully updated student data!`;
-                    
+                        ? `Successfully synced ${res.data.imported} classes and assignments!`
+                        : `Successfully updated student data!`;
+
                 alert(message);
             }
         } catch (err: any) {
@@ -79,12 +77,11 @@ const GoogleClassroomConnect: React.FC<GoogleClassroomConnectProps> = ({ userRol
 
     const handleDisconnect = async () => {
         if (!confirm('Are you sure you want to disconnect Google Classroom?')) return;
-        
+
         try {
             await api.post('/api/google/disconnect');
             setIsConnected(false);
             setLastSync(null);
-            setSyncCount(0);
         } catch (err) {
             console.error('Failed to disconnect', err);
             setError('Failed to disconnect. Please try again.');
@@ -120,9 +117,8 @@ const GoogleClassroomConnect: React.FC<GoogleClassroomConnectProps> = ({ userRol
         <div className="glass p-6 rounded-3xl border border-white/10">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                        isConnected ? 'bg-green-500/20' : 'bg-gray-500/20'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isConnected ? 'bg-green-500/20' : 'bg-gray-500/20'
+                        }`}>
                         {isConnected ? (
                             <CheckCircle2 className="w-6 h-6 text-green-400" />
                         ) : (

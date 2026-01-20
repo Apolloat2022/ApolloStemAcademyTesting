@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import GoogleClassroomConnect from '../components/GoogleClassroomConnect';
-import { Users, BookOpen, ClipboardCheck, BarChart3, Sparkles, X, BrainCircuit, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
+import { Users, BookOpen, ClipboardCheck, BarChart3, Sparkles, X, BrainCircuit, CheckCircle2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import AssignmentSuite from './AssignmentSuite';
@@ -178,8 +178,8 @@ const TeacherDashboard: React.FC = () => {
                     <>
                         {/* Google Classroom Integration */}
                         <div className="mb-8">
-                            <GoogleClassroomConnect 
-                                userRole="teacher" 
+                            <GoogleClassroomConnect
+                                userRole="teacher"
                                 onSyncComplete={fetchDashboardData}
                             />
                         </div>

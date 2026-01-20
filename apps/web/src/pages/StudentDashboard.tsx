@@ -7,7 +7,6 @@ import {
     BookOpen,
     ClipboardList,
     TrendingUp,
-    ArrowRight,
     Sparkles,
     BrainCircuit,
     X,
@@ -114,8 +113,8 @@ const StudentDashboard: React.FC = () => {
 
                 {/* Google Classroom Integration */}
                 <div className="mb-8">
-                    <GoogleClassroomConnect 
-                        userRole="student" 
+                    <GoogleClassroomConnect
+                        userRole="student"
                         onSyncComplete={fetchDashboardData}
                     />
                 </div>
