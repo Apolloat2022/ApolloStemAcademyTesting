@@ -4,7 +4,7 @@ import { Sparkles, BrainCircuit, Rocket, Target, Zap, ArrowRight, BookOpen, Calc
 import { api } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/api/ai/generate';
+const CLOUDFLARE_WORKER_URL = '/api/ai/generate';
 
 const LearningHub: React.FC = () => {
     const navigate = useNavigate();
@@ -65,22 +65,12 @@ const LearningHub: React.FC = () => {
 
     const callRealAI = async (prompt: string, toolKey: string = 'general') => {
         try {
-            const res = await fetch(CLOUDFLARE_WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, toolKey })
+            const res = await api.post(CLOUDFLARE_WORKER_URL, {
+                prompt, toolKey
             });
 
-            const text = await res.text();
-            try {
-                const data = JSON.parse(text);
-                return data.success ? data.answer : `Error: ${data.error}`;
-            } catch (jsonErr) {
-                if (text.length > 0 && (text.includes('{') || text.includes('}'))) {
-                    throw new Error(`Invalid JSON format: ${text.substring(0, 50)}...`);
-                }
-                return text || 'Empty response from AI worker';
-            }
+            const data = res.data;
+            return data.success ? data.answer : `Error: ${data.error}`;
         } catch (err: any) {
             console.error('AI Fetch Error:', err);
             return `AI unavailable: ${err.message}`;
@@ -155,8 +145,8 @@ const LearningHub: React.FC = () => {
                                                             {mission.subject}
                                                         </span>
                                                         <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${mission.difficulty === 'advanced' ? 'bg-red-500/10 text-red-500' :
-                                                                mission.difficulty === 'intermediate' ? 'bg-yellow-500/10 text-yellow-500' :
-                                                                    'bg-green-500/10 text-green-500'
+                                                            mission.difficulty === 'intermediate' ? 'bg-yellow-500/10 text-yellow-500' :
+                                                                'bg-green-500/10 text-green-500'
                                                             }`}>
                                                             {mission.difficulty}
                                                         </span>

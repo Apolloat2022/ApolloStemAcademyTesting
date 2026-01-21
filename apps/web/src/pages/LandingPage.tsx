@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Award, Star, Globe, Heart, BookOpen, Microscope, Code, Calculator, Atom, Zap, FileText, UserPlus } from 'lucide-react';
+import { api } from '../services/api';
 
-const CLOUDFLARE_WORKER_URL = 'https://apolloacademyaiteacher.revanaglobal.workers.dev/api/ai/generate';
+const CLOUDFLARE_WORKER_URL = '/api/ai/generate';
 
 const LandingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -26,25 +27,12 @@ const LandingPage: React.FC = () => {
     // Call AI Helper
     const callRealAI = async (prompt: string, toolKey: string = 'general') => {
         try {
-            const res = await fetch(CLOUDFLARE_WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, toolKey })
+            const res = await api.post(CLOUDFLARE_WORKER_URL, {
+                prompt, toolKey
             });
 
-            const text = await res.text();
-            console.log('AI Worker Raw Response:', text);
-
-            try {
-                const data = JSON.parse(text);
-                return data.success ? data.answer : `Error: ${data.error}`;
-            } catch (jsonErr) {
-                // If it's not JSON, maybe it's the raw answer or an error message
-                if (text.length > 0 && (text.includes('{') || text.includes('}'))) {
-                    throw new Error(`Invalid JSON format: ${text.substring(0, 50)}...`);
-                }
-                return text || 'Empty response from AI worker';
-            }
+            const data = res.data;
+            return data.success ? data.answer : `Error: ${data.error}`;
         } catch (err: any) {
             console.error('AI Fetch Error:', err);
             return `AI unavailable: ${err.message}`;

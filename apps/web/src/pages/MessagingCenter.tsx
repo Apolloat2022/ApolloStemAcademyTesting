@@ -59,14 +59,10 @@ const MessagingCenter: React.FC = () => {
         if (!currentChat) return;
         setIsDrafting(true);
         try {
-            const res = await fetch('https://apolloacademyaiteacher.revanaglobal.workers.dev/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prompt: `You are a helpful teacher at Apollo Academy. Draft a short, supportive, and encouraging message for a student named ${currentChat.name}. The student's last message was: "${currentChat.lastMsg}". keep the tone positive and helpful.`
-                })
+            const res = await api.post('/api/ai/generate', {
+                prompt: `You are a helpful teacher at Apollo Academy. Draft a short, supportive, and encouraging message for a student named ${currentChat.name}. The student's last message was: "${currentChat.lastMsg}". keep the tone positive and helpful.`
             });
-            const data = await res.json();
+            const data = res.data;
             if (data.success) {
                 setAiDraft(data.answer);
             } else {
