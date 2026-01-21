@@ -114,8 +114,19 @@ app.get('/api/auth/google/url', authMiddleware, async (c) => {
   const { redirectUri } = c.req.query();
   if (!redirectUri) return c.json({ error: 'Missing redirectUri' }, 400);
 
-  const url = await getGoogleAuthUrl(c.env, redirectUri);
-  return c.json({ url });
+  try {
+    // Check if required environment variables are set
+    if (!c.env.GOOGLE_CLIENT_ID) {
+      console.error('GOOGLE_CLIENT_ID is not set in environment');
+      return c.json({ error: 'Google OAuth not configured. Please contact administrator.' }, 500);
+    }
+
+    const url = await getGoogleAuthUrl(c.env, redirectUri);
+    return c.json({ url });
+  } catch (err: any) {
+    console.error('Failed to generate Google OAuth URL:', err);
+    return c.json({ error: err.message || 'Failed to generate OAuth URL' }, 500);
+  }
 });
 
 app.post('/api/auth/google/callback', authMiddleware, async (c) => {
