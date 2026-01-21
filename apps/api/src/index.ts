@@ -84,7 +84,22 @@ app.post('/auth/google', async (c) => {
       id: payload.sub,
       email: payload.email,
       name: payload.name,
-      role: role || 'student' // Use the role selected in the frontend
+      role: role || 'student'
+    }
+
+    // Persist user to DB (Fix for Foreign Key error)
+    if (c.env.DB) {
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            email = excluded.email
+        `).bind(user.id, user.email, user.name, user.role).run();
+      } catch (e: any) {
+        console.error('Failed to upsert user:', e);
+        // Don't block login if DB write fails, but log it critical
+      }
     }
 
     const jwtToken = await createToken(user)
@@ -365,9 +380,9 @@ app.post('/api/google/connect', authMiddleware, roleMiddleware(['student']), asy
     `).bind(link, userId).run();
 
     return c.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error connecting Google Classroom:', error);
-    return c.json({ error: 'Failed to connect' }, 500);
+    return c.json({ error: `Sync Failed: ${error.message}` }, 500);
   }
 });
 

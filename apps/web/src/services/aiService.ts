@@ -1,38 +1,19 @@
-// Use deployed Cloudflare Worker (same as working HTML file)
-const CLOUDFLARE_WORKER_URL = (import.meta.env.VITE_API_URL || 'https://apolloacademyaiteacher.revanaglobal.workers.dev') + '/api/ai/generate';
+import { api } from './api';
 
 export const aiService = {
     generate: async (prompt: string, context?: string) => {
         const fullPrompt = context ? `${context}\n\n${prompt}` : prompt;
 
-        console.log('[AI Service] Requesting:', { url: CLOUDFLARE_WORKER_URL, prompt: fullPrompt });
+        // console.log('[AI Service] Requesting:', { prompt: fullPrompt });
 
         try {
-            const response = await fetch(CLOUDFLARE_WORKER_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt: fullPrompt
-                })
+            const response = await api.post('/api/ai/generate', {
+                prompt: fullPrompt
             });
 
-            console.log('[AI Service] Response Status:', response.status);
+            const data = response.data;
+            // console.log('[AI Service] Data:', data);
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('[AI Service] Error Body:', errorText);
-                if (response.status === 404) throw new Error("API endpoint not found. Backend might be down.");
-                if (response.status === 401) throw new Error("Authentication issue. Please retry.");
-                throw new Error(`HTTP Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('[AI Service] Data:', data);
-
-            // Handle response from deployed Cloudflare Worker
             if (data.success && data.answer) {
                 return data.answer;
             } else if (data.error) {
